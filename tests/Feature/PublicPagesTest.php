@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\SurveyLocation;
+use App\Models\SurveyPhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -137,5 +138,38 @@ class PublicPagesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Titik Tanpa GPS');
         $response->assertSee('Nihil');
+    }
+
+    public function test_public_survey_show_displays_survey_photos_when_available(): void
+    {
+        $survey = SurveyLocation::factory()->create([
+            'alamat' => 'Lokasi Berfoto',
+        ]);
+
+        SurveyPhoto::factory()->create([
+            'survey_location_id' => $survey->id,
+            'original_name' => 'tiang_cctv_depan.jpg',
+            'file_path' => 'surveys/' . $survey->id . '/tiang_cctv_depan.jpg',
+        ]);
+
+        $response = $this->get("/survey/{$survey->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Foto Dokumentasi');
+        $response->assertSee('1 Foto');
+        $response->assertSee('tiang_cctv_depan.jpg');
+    }
+
+    public function test_public_survey_show_displays_empty_state_when_no_photos(): void
+    {
+        $survey = SurveyLocation::factory()->create([
+            'alamat' => 'Lokasi Tanpa Foto',
+        ]);
+
+        $response = $this->get("/survey/{$survey->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Foto Dokumentasi');
+        $response->assertSee('Belum ada foto dokumentasi untuk titik survei ini.');
     }
 }

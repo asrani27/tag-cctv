@@ -73,7 +73,7 @@ class PublicSurveyController extends Controller
      */
     public function show(int $id): View
     {
-        $survey = SurveyLocation::findOrFail($id);
+        $survey = SurveyLocation::with('photos')->findOrFail($id);
 
         return view('public.surveys.show', compact('survey'));
     }
