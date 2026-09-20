@@ -37,7 +37,7 @@
     </div>
 
     <!-- Stat Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-3 {{ $isSuperAdmin ? 'lg:grid-cols-6' : 'lg:grid-cols-5' }} gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 {{ $isSuperAdmin ? 'lg:grid-cols-7' : 'lg:grid-cols-6' }} gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
             <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Survey</span>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($totalSurvey) }}</p>
@@ -54,6 +54,12 @@
             <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total AP</span>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($totalAp) }}</p>
             <p class="text-[11px] text-slate-400 mt-1">{{ $isSuperAdmin ? 'Access Point WiFi' : 'WiFi/AP Saya' }}</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Foto</span>
+            <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($totalPhotos) }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">{{ $isSuperAdmin ? 'Total Dokumentasi' : 'Foto Saya' }}</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">

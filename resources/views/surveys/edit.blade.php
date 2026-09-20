@@ -28,6 +28,7 @@
         @include('surveys.partials._section_lokasi')
         @include('surveys.partials._section_infrastruktur')
         @include('surveys.partials._section_wifi_listrik')
+        @include('surveys.partials._section_photos')
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <x-button variant="outline" size="md" :href="route('surveys.show', $survey)">

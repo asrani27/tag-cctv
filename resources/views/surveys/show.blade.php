@@ -74,6 +74,7 @@
     @include('surveys.partials._detail_map')
     @include('surveys.partials._detail_infrastruktur')
     @include('surveys.partials._detail_koneksi')
+    @include('surveys.partials._detail_photos')
 </div>
 @endsection
 

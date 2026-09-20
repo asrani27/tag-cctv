@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\SurveyPhotoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Survey Photos Chunk Upload & Management
+    Route::get('surveys/photos/chunk-status', [SurveyPhotoController::class, 'chunkStatus'])->name('surveys.photos.chunk-status');
+    Route::post('surveys/photos/chunk', [SurveyPhotoController::class, 'uploadChunk'])->name('surveys.photos.chunk');
+    Route::post('surveys/photos/complete', [SurveyPhotoController::class, 'completeUpload'])->name('surveys.photos.complete');
+    Route::delete('surveys/photos/chunk/{uploadId}', [SurveyPhotoController::class, 'cancelUpload'])->name('surveys.photos.cancel');
+    Route::delete('surveys/{survey}/photos/{photo}', [SurveyPhotoController::class, 'destroy'])->name('surveys.photos.destroy');
 
     Route::resource('surveys', SurveyController::class);
 

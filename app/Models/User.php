@@ -67,5 +67,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(SurveyLocation::class, 'user_id');
     }
+
+    /**
+     * Get the photos uploaded by the user.
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(SurveyPhoto::class, 'user_id');
+    }
 }
 

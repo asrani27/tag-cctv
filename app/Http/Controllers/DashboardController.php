@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SurveyLocation;
+use App\Models\SurveyPhoto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,6 +35,7 @@ class DashboardController extends Controller
                 ->whereNotNull('longitude')
                 ->count();
             $totalFiber = SurveyLocation::where('tersedia_fiber_optik', true)->count();
+            $totalPhotos = SurveyPhoto::count();
 
             // 5 survey terbaru dari semua user
             $recentSurveys = SurveyLocation::with('user')->latest()->take(5)->get();
@@ -48,6 +50,7 @@ class DashboardController extends Controller
                 'totalUsers' => $totalUsers,
                 'totalWithCoords' => $totalWithCoords,
                 'totalFiber' => $totalFiber,
+                'totalPhotos' => $totalPhotos,
                 'recentSurveys' => $recentSurveys,
             ]);
         }
@@ -77,6 +80,9 @@ class DashboardController extends Controller
             ->where('tersedia_fiber_optik', true)
             ->count();
 
+        $surveyIds = (clone $userSurveys)->pluck('id');
+        $totalPhotos = SurveyPhoto::whereIn('survey_location_id', $surveyIds)->count();
+
         // 5 survey terbaru hanya milik user yang bersangkutan
         $recentSurveys = (clone $userSurveys)->latest()->take(5)->get();
 
@@ -90,6 +96,7 @@ class DashboardController extends Controller
             'totalUsers' => null,
             'totalWithCoords' => $totalWithCoords,
             'totalFiber' => $totalFiber,
+            'totalPhotos' => $totalPhotos,
             'recentSurveys' => $recentSurveys,
         ]);
     }

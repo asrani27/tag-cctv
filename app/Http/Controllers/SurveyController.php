@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SurveyRequest;
 use App\Models\SurveyLocation;
+use App\Models\SurveyPhoto;
+use App\Models\SurveyTempPhoto;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SurveyController extends Controller
@@ -21,7 +25,7 @@ class SurveyController extends Controller
 
         // Base query scoped by user role
         if ($user->isSuperAdmin()) {
-            $query = SurveyLocation::with('user')->latest();
+            $query = SurveyLocation::with(['user', 'photos'])->latest();
 
             // Filter User khusus superadmin
             if ($request->filled('user_id')) {
@@ -34,7 +38,7 @@ class SurveyController extends Controller
             }
         } else {
             // User biasa HANYA boleh melihat data yang ia input sendiri
-            $query = SurveyLocation::where('user_id', $user->id)->latest();
+            $query = SurveyLocation::with('photos')->where('user_id', $user->id)->latest();
         }
 
         // 1. Search alamat, kelurahan, atau kecamatan
@@ -118,9 +122,48 @@ class SurveyController extends Controller
     {
         Gate::authorize('create', SurveyLocation::class);
 
-        $survey = new SurveyLocation($request->validated());
-        $survey->user_id = $request->user()->id;
-        $survey->save();
+        $survey = DB::transaction(function () use ($request) {
+            $survey = new SurveyLocation($request->validated());
+            $survey->user_id = $request->user()->id;
+            $survey->save();
+
+            $tempUploadIds = $request->input('temp_photos', []);
+            if (is_array($tempUploadIds) && count($tempUploadIds) > 0) {
+                $tempPhotos = SurveyTempPhoto::where('user_id', $request->user()->id)
+                    ->whereIn('upload_id', $tempUploadIds)
+                    ->get();
+
+                $publicDisk = Storage::disk('public');
+                $targetDir = "surveys/{$survey->id}";
+                if (! $publicDisk->exists($targetDir)) {
+                    $publicDisk->makeDirectory($targetDir);
+                }
+
+                $order = 1;
+                foreach ($tempPhotos as $temp) {
+                    $filename = basename($temp->file_path);
+                    $newPath = "{$targetDir}/{$filename}";
+
+                    if ($publicDisk->exists($temp->file_path)) {
+                        $publicDisk->move($temp->file_path, $newPath);
+
+                        SurveyPhoto::create([
+                            'survey_location_id' => $survey->id,
+                            'user_id' => $request->user()->id,
+                            'file_path' => $newPath,
+                            'original_name' => $temp->original_name,
+                            'mime_type' => $temp->mime_type,
+                            'file_size' => $temp->file_size,
+                            'sort_order' => $order++,
+                        ]);
+                    }
+
+                    $temp->delete();
+                }
+            }
+
+            return $survey;
+        });
 
         return redirect()
             ->route('surveys.index')
@@ -134,7 +177,7 @@ class SurveyController extends Controller
     {
         Gate::authorize('view', $survey);
 
-        $survey->load('user');
+        $survey->load(['user', 'photos.user']);
 
         return view('surveys.show', [
             'survey' => $survey,
@@ -147,6 +190,8 @@ class SurveyController extends Controller
     public function edit(SurveyLocation $survey): View
     {
         Gate::authorize('update', $survey);
+
+        $survey->load('photos');
 
         return view('surveys.edit', [
             'survey' => $survey,

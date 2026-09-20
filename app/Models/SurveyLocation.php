@@ -5,10 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SurveyLocation extends Model
 {
     use HasFactory;
+
+    /**
+     * Bootstrap the model and its traits.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (SurveyLocation $survey) {
+            foreach ($survey->photos as $photo) {
+                $photo->delete();
+            }
+        });
+    }
 
     /**
      * The table associated with the model.
@@ -191,9 +205,17 @@ class SurveyLocation extends Model
     /**
      * Get the user who created this survey.
      */
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the photos associated with this survey.
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(SurveyPhoto::class, 'survey_location_id')->orderBy('sort_order')->orderBy('id');
     }
 }
 
