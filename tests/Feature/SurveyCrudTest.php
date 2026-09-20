@@ -22,6 +22,7 @@ class SurveyCrudTest extends TestCase
     public function test_dashboard_displays_statistics_and_recent_surveys(): void
     {
         SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'jumlah_cctv' => 4,
             'jumlah_ap' => 2,
             'tersedia_fiber_optik' => true,
@@ -38,6 +39,7 @@ class SurveyCrudTest extends TestCase
     public function test_surveys_index_can_be_rendered(): void
     {
         SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Jl. Lambung Mangkurat No. 1',
             'kecamatan' => 'Banjarmasin Tengah',
         ]);
@@ -52,12 +54,14 @@ class SurveyCrudTest extends TestCase
     public function test_surveys_search_and_filters_work(): void
     {
         SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Kantor Walikota Banjarmasin',
             'kecamatan' => 'Banjarmasin Tengah',
             'tersedia_fiber_optik' => true,
         ]);
 
         SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Jembatan Barito',
             'kecamatan' => 'Banjarmasin Barat',
             'tersedia_fiber_optik' => false,
@@ -113,6 +117,7 @@ class SurveyCrudTest extends TestCase
     public function test_survey_can_be_shown(): void
     {
         $survey = SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Siring Menara Pandang',
             'latitude' => -3.319456,
             'longitude' => 114.590823,
@@ -127,6 +132,7 @@ class SurveyCrudTest extends TestCase
     public function test_survey_show_handles_null_coordinates_safely(): void
     {
         $survey = SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Lokasi Belum Dipetakan',
             'latitude' => null,
             'longitude' => null,
@@ -141,6 +147,7 @@ class SurveyCrudTest extends TestCase
     public function test_survey_can_be_updated(): void
     {
         $survey = SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
             'alamat' => 'Alamat Lama',
             'jumlah_cctv' => 1,
         ]);
@@ -164,7 +171,9 @@ class SurveyCrudTest extends TestCase
 
     public function test_survey_can_be_deleted(): void
     {
-        $survey = SurveyLocation::factory()->create();
+        $survey = SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
 
         $response = $this->actingAs($this->user)->delete('/surveys/' . $survey->id);
 
@@ -173,4 +182,70 @@ class SurveyCrudTest extends TestCase
             'id' => $survey->id,
         ]);
     }
+
+    public function test_create_survey_form_renders_location_picker_and_geolocation_ui(): void
+    {
+        $response = $this->actingAs($this->user)->get('/surveys/create');
+
+        $response->assertStatus(200);
+        $response->assertSee('Gunakan Lokasi Saya');
+        $response->assertSee('id="btn-get-location"', false);
+        $response->assertSee('id="survey-form-map"', false);
+        $response->assertSee('id="location-feedback-alert"', false);
+        $response->assertSee('survey-location-picker.js');
+    }
+
+    public function test_edit_survey_form_renders_location_picker_with_existing_coordinates(): void
+    {
+        $survey = SurveyLocation::factory()->create([
+            'user_id' => $this->user->id,
+            'latitude' => -3.3194567,
+            'longitude' => 114.5908234,
+            'alamat' => 'Jl. Lambung Mangkurat No. 10',
+        ]);
+
+        $response = $this->actingAs($this->user)->get('/surveys/' . $survey->id . '/edit');
+
+        $response->assertStatus(200);
+        $response->assertSee('Gunakan Lokasi Saya');
+        $response->assertSee('id="btn-get-location"', false);
+        $response->assertSee('id="survey-form-map"', false);
+        $response->assertSee('-3.3194567');
+        $response->assertSee('114.5908234');
+        $response->assertSee('survey-location-picker.js');
+    }
+
+    public function test_survey_coordinate_validation_rules_and_messages(): void
+    {
+        $response = $this->actingAs($this->user)->post('/surveys', [
+            'latitude' => 95.1234,
+            'longitude' => 195.1234,
+        ]);
+
+        $response->assertSessionHasErrors([
+            'latitude' => 'Latitude harus berada dalam rentang -90 sampai 90.',
+            'longitude' => 'Longitude harus berada dalam rentang -180 sampai 180.',
+        ]);
+    }
+
+    public function test_survey_can_be_saved_with_high_precision_coordinates(): void
+    {
+        $payload = [
+            'latitude' => -3.3214567,
+            'longitude' => 114.5918234,
+            'alamat' => 'Titik Presisi Tinggi GPS',
+            'kelurahan' => 'Kertak Baru Ulu',
+            'kecamatan' => 'Banjarmasin Tengah',
+        ];
+
+        $response = $this->actingAs($this->user)->post('/surveys', $payload);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('survey_locations', [
+            'alamat' => 'Titik Presisi Tinggi GPS',
+            'latitude' => -3.3214567,
+            'longitude' => 114.5918234,
+        ]);
+    }
+
 }

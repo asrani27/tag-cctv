@@ -17,6 +17,9 @@
                     <th class="px-4 py-3">Kecamatan</th>
                     <th class="px-3 py-3 text-center">CCTV</th>
                     <th class="px-3 py-3 text-center">AP</th>
+                    @if (auth()->user()?->isSuperAdmin())
+                        <th class="px-4 py-3">Diinput Oleh</th>
+                    @endif
                     <th class="px-4 py-3">Latitude</th>
                     <th class="px-4 py-3">Longitude</th>
                     <th class="px-4 py-3">Tanggal</th>
@@ -31,6 +34,14 @@
                         <td class="px-4 py-3.5"><x-badge variant="emerald" size="xs">{{ $survey->kecamatan ?? '-' }}</x-badge></td>
                         <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_cctv ?? 0 }}</td>
                         <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_ap ?? 0 }}</td>
+                        @if (auth()->user()?->isSuperAdmin())
+                            <td class="px-4 py-3.5">
+                                <span class="font-medium text-slate-800">{{ $survey->user?->name ?? 'Data Lama' }}</span>
+                                @if ($survey->user?->email)
+                                    <span class="block text-[10px] text-slate-400">{{ $survey->user->email }}</span>
+                                @endif
+                            </td>
+                        @endif
                         <td class="px-4 py-3.5 font-mono text-[11px] text-slate-500">{{ $survey->latitude ? number_format($survey->latitude, 6) : '-' }}</td>
                         <td class="px-4 py-3.5 font-mono text-[11px] text-slate-500">{{ $survey->longitude ? number_format($survey->longitude, 6) : '-' }}</td>
                         <td class="px-4 py-3.5 text-slate-400 whitespace-nowrap">{{ $survey->created_at ? $survey->created_at->format('d/m/Y') : '-' }}</td>

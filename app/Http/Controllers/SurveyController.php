@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SurveyRequest;
 use App\Models\SurveyLocation;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SurveyController extends Controller
@@ -15,7 +17,25 @@ class SurveyController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = SurveyLocation::query()->latest();
+        $user = $request->user();
+
+        // Base query scoped by user role
+        if ($user->isSuperAdmin()) {
+            $query = SurveyLocation::with('user')->latest();
+
+            // Filter User khusus superadmin
+            if ($request->filled('user_id')) {
+                $filterUserId = $request->input('user_id');
+                if ($filterUserId === 'legacy') {
+                    $query->whereNull('user_id');
+                } else {
+                    $query->where('user_id', $filterUserId);
+                }
+            }
+        } else {
+            // User biasa HANYA boleh melihat data yang ia input sendiri
+            $query = SurveyLocation::where('user_id', $user->id)->latest();
+        }
 
         // 1. Search alamat, kelurahan, atau kecamatan
         $search = trim((string) ($request->input('search') ?? $request->input('q') ?? ''));
@@ -60,14 +80,21 @@ class SurveyController extends Controller
             ->orderBy('kelurahan')
             ->pluck('kelurahan');
 
+        $userOptions = $user->isSuperAdmin()
+            ? User::orderBy('name')->get(['id', 'name', 'email'])
+            : collect();
+
         return view('surveys.index', [
             'surveys' => $surveys,
             'kecamatanOptions' => $kecamatanOptions,
             'kelurahanOptions' => $kelurahanOptions,
+            'userOptions' => $userOptions,
             'currentSearch' => $request->input('search', ''),
             'currentKecamatan' => $request->input('kecamatan', ''),
             'currentKelurahan' => $request->input('kelurahan', ''),
             'currentKoneksi' => $request->input('koneksi', ''),
+            'currentUserId' => $request->input('user_id', ''),
+            'isSuperAdmin' => $user->isSuperAdmin(),
         ]);
     }
 
@@ -76,6 +103,8 @@ class SurveyController extends Controller
      */
     public function create(): View
     {
+        Gate::authorize('create', SurveyLocation::class);
+
         return view('surveys.create', [
             'kecamatanList' => SurveyLocation::KECAMATAN_LIST,
             'kelurahanMap' => SurveyLocation::KELURAHAN_BY_KECAMATAN,
@@ -87,7 +116,11 @@ class SurveyController extends Controller
      */
     public function store(SurveyRequest $request): RedirectResponse
     {
-        $survey = SurveyLocation::create($request->validated());
+        Gate::authorize('create', SurveyLocation::class);
+
+        $survey = new SurveyLocation($request->validated());
+        $survey->user_id = $request->user()->id;
+        $survey->save();
 
         return redirect()
             ->route('surveys.index')
@@ -99,6 +132,10 @@ class SurveyController extends Controller
      */
     public function show(SurveyLocation $survey): View
     {
+        Gate::authorize('view', $survey);
+
+        $survey->load('user');
+
         return view('surveys.show', [
             'survey' => $survey,
         ]);
@@ -109,6 +146,8 @@ class SurveyController extends Controller
      */
     public function edit(SurveyLocation $survey): View
     {
+        Gate::authorize('update', $survey);
+
         return view('surveys.edit', [
             'survey' => $survey,
             'kecamatanList' => SurveyLocation::KECAMATAN_LIST,
@@ -121,6 +160,8 @@ class SurveyController extends Controller
      */
     public function update(SurveyRequest $request, SurveyLocation $survey): RedirectResponse
     {
+        Gate::authorize('update', $survey);
+
         $survey->update($request->validated());
 
         return redirect()
@@ -133,6 +174,8 @@ class SurveyController extends Controller
      */
     public function destroy(SurveyLocation $survey): RedirectResponse
     {
+        Gate::authorize('delete', $survey);
+
         $survey->delete();
 
         return redirect()
@@ -140,3 +183,4 @@ class SurveyController extends Controller
             ->with('success', 'Data survey berhasil dihapus.');
     }
 }
+

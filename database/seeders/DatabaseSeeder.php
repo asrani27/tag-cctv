@@ -17,23 +17,36 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
-        User::firstOrCreate(
+        // Admin User (Superadmin)
+        $admin = User::firstOrCreate(
             ['email' => 'admin@banjarmasin.go.id'],
             [
                 'name' => 'Administrator CCTV Banjarmasin',
                 'password' => Hash::make('password'),
+                'role' => User::ROLE_SUPERADMIN,
+                'is_active' => true,
             ]
         );
+        $admin->update([
+            'role' => User::ROLE_SUPERADMIN,
+            'is_active' => true,
+        ]);
 
-        // Test User
-        User::firstOrCreate(
+        // Test User (Surveyor / Regular User)
+        $surveyor = User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Surveyor Lapangan',
                 'password' => Hash::make('password'),
+                'role' => User::ROLE_USER,
+                'is_active' => true,
             ]
         );
+        $surveyor->update([
+            'role' => User::ROLE_USER,
+            'is_active' => true,
+        ]);
+
 
         // Seed sample survey locations if empty
         if (SurveyLocation::count() === 0) {

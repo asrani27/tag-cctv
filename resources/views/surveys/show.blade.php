@@ -27,18 +27,49 @@
             <x-button variant="outline" size="sm" :href="route('surveys.index')">
                 Kembali
             </x-button>
-            <x-button variant="primary" size="sm" :href="route('surveys.edit', $survey)">
-                Edit
-            </x-button>
-            <form method="POST" action="{{ route('surveys.destroy', $survey) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data survey ini?');" class="inline">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" variant="danger" size="sm">
-                    Hapus
+            @can('update', $survey)
+                <x-button variant="primary" size="sm" :href="route('surveys.edit', $survey)">
+                    Edit
                 </x-button>
-            </form>
+            @endcan
+            @can('delete', $survey)
+                <form method="POST" action="{{ route('surveys.destroy', $survey) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data survey ini?');" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <x-button type="submit" variant="danger" size="sm">
+                        Hapus
+                    </x-button>
+                </form>
+            @endcan
         </div>
     </div>
+
+    <!-- Metadata Pendataan -->
+    <x-card title="Informasi Pendataan" subtitle="Metadata riwayat pembuatan dan kepemilikan survey">
+        <dl class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 bg-slate-50 rounded-lg">
+                <dt class="text-slate-400 font-medium">ID Survey</dt>
+                <dd class="text-sm font-bold text-slate-800 font-mono mt-1">#{{ $survey->id }}</dd>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg">
+                <dt class="text-slate-400 font-medium">Tanggal Input</dt>
+                <dd class="text-sm font-semibold text-slate-800 mt-1">{{ $survey->created_at ? $survey->created_at->format('d/m/Y H:i') : '-' }}</dd>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg">
+                <dt class="text-slate-400 font-medium">Terakhir Diubah</dt>
+                <dd class="text-sm font-semibold text-slate-800 mt-1">{{ $survey->updated_at ? $survey->updated_at->format('d/m/Y H:i') : '-' }}</dd>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg">
+                <dt class="text-slate-400 font-medium">Diinput Oleh</dt>
+                <dd class="text-sm font-bold text-slate-900 mt-1">
+                    {{ $survey->user?->name ?? 'Data Lama' }}
+                    @if ($survey->user?->email)
+                        <span class="block text-[11px] font-normal text-slate-500">{{ $survey->user->email }}</span>
+                    @endif
+                </dd>
+            </div>
+        </dl>
+    </x-card>
 
     @include('surveys.partials._detail_map')
     @include('surveys.partials._detail_infrastruktur')

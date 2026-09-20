@@ -187,5 +187,14 @@ class SurveyLocation extends Model
     {
         return $query->whereNotNull('latitude')->whereNotNull('longitude');
     }
+
+    /**
+     * Get the user who created this survey.
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
+
 

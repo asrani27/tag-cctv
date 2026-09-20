@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/map', [MapController::class, 'index'])->name('map');
+Route::get('/map/geojson', [MapController::class, 'geojson'])->name('map.geojson');
 Route::get('/survey', [PublicSurveyController::class, 'index'])->name('public.surveys.index');
 Route::get('/survey/{id}', [PublicSurveyController::class, 'show'])->name('public.surveys.show');
 
@@ -30,7 +32,7 @@ Route::middleware('guest')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Administrator Routes
+| Authenticated Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -39,6 +41,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('surveys', SurveyController::class);
+
+    // Superadmin-only User Management
+    Route::middleware('superadmin')->group(function () {
+        Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::resource('users', UserController::class)->except(['show']);
+    });
 });
+
 
 

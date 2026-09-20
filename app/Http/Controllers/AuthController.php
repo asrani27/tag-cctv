@@ -31,6 +31,20 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            $user = Auth::user();
+
+            if (! $user->isActive()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()
+                    ->withInput($request->only('email', 'remember'))
+                    ->withErrors([
+                        'email' => 'Akun Anda dinonaktifkan. Silakan hubungi administrator.',
+                    ]);
+            }
+
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'));
@@ -42,6 +56,7 @@ class AuthController extends Controller
                 'email' => 'Email atau kata sandi yang Anda masukkan salah.',
             ]);
     }
+
 
     /**
      * Log the user out of the application.

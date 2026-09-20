@@ -66,13 +66,32 @@
                     </svg>
                     Peta Survey
                 </a>
+
+                @if (auth()->user()?->isSuperAdmin())
+                    <a
+                        href="{{ route('users.index') }}"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium {{ request()->routeIs('users.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                    >
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        Manajemen Pengguna
+                    </a>
+                @endif
             </nav>
         </div>
 
         <div class="border-t border-slate-200 pt-4">
             <div class="p-3 bg-slate-50 rounded-xl mb-3">
-                <p class="text-xs font-semibold text-slate-800">{{ auth()->user()->name ?? 'Admin' }}</p>
-                <p class="text-[10px] text-slate-500">{{ auth()->user()->email ?? '' }}</p>
+                <div class="flex items-center justify-between gap-1 mb-1">
+                    <p class="text-xs font-semibold text-slate-800 truncate">{{ auth()->user()->name ?? 'Pengguna' }}</p>
+                    @if (auth()->user()?->isSuperAdmin())
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 shrink-0">Superadmin</span>
+                    @else
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-200 text-slate-700 shrink-0">Surveyor</span>
+                    @endif
+                </div>
+                <p class="text-[10px] text-slate-500 truncate">{{ auth()->user()->email ?? '' }}</p>
             </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

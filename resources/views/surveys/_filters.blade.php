@@ -1,7 +1,7 @@
 <form method="GET" action="{{ route('surveys.index') }}" class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ $isSuperAdmin ? '5' : '4' }} gap-3">
         <!-- Search Input -->
-        <div class="md:col-span-2">
+        <div class="{{ $isSuperAdmin ? 'lg:col-span-2' : 'md:col-span-2' }}">
             <label for="search" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                 Pencarian
             </label>
@@ -21,6 +21,26 @@
                 </div>
             </div>
         </div>
+
+        @if ($isSuperAdmin)
+        <!-- Filter User (Superadmin Only) -->
+        <div>
+            <label for="user_id" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Penginput
+            </label>
+            <select
+                name="user_id"
+                id="user_id"
+                class="block w-full rounded-lg border border-slate-300 text-sm px-3 py-2 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60"
+            >
+                <option value="">Semua User</option>
+                <option value="legacy" @selected($currentUserId === 'legacy')>Data Lama (Tanpa User)</option>
+                @foreach ($userOptions as $u)
+                    <option value="{{ $u->id }}" @selected((string)$currentUserId === (string)$u->id)>{{ $u->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
 
         <!-- Filter Kecamatan -->
         <div>
@@ -62,7 +82,7 @@
             Total hasil: <span class="font-semibold text-slate-800">{{ $surveys->total() }}</span> data
         </div>
         <div class="flex items-center gap-2">
-            @if ($currentSearch || $currentKecamatan || $currentKelurahan || $currentKoneksi)
+            @if ($currentSearch || $currentKecamatan || $currentKelurahan || $currentKoneksi || $currentUserId)
                 <a href="{{ route('surveys.index') }}" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 hover:underline">
                     Reset Filter
                 </a>

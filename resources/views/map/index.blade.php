@@ -17,15 +17,19 @@
                     <span>/</span>
                     <span class="text-slate-700 font-medium">Peta Survei</span>
                 </nav>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Peta Sebaran Titik Survei</h1>
-                <p class="text-xs sm:text-sm text-slate-600">Visualisasi titik survei perangkat CCTV dan WiFi Kota Banjarmasin.</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {{ $isUser ? 'Peta Sebaran Titik Survei Saya' : 'Peta Sebaran Titik Survei' }}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-600">
+                    {{ $isUser ? 'Visualisasi titik survei perangkat CCTV dan WiFi yang Anda input.' : 'Visualisasi titik survei perangkat CCTV dan WiFi Kota Banjarmasin.' }}
+                </p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     {{ $surveys->count() }} Titik Terpetakan
                 </span>
-                <a href="{{ route('public.surveys.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
-                    Katalog Data
+                <a href="{{ auth()->check() ? route('surveys.index') : route('public.surveys.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50">
+                    {{ auth()->check() ? 'Kelola Data' : 'Katalog Data' }}
                 </a>
             </div>
         </div>
@@ -63,6 +67,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const locations = @json($surveys);
+            const isSuperAdmin = @json($isSuperAdmin);
             const map = L.map('banjarmasin-map').setView([-3.3194, 114.5908], 13);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
 
@@ -74,14 +79,21 @@
                     if (!isNaN(lat) && !isNaN(lng)) {
                         const m = L.marker([lat, lng]).addTo(map);
                         markers.push(m);
+
+                        let creatorHtml = '';
+                        if (isSuperAdmin && item.diinput_oleh) {
+                            creatorHtml = `<div class="mb-2 text-[11px] text-slate-500">Diinput Oleh: <strong class="text-slate-800">${esc(item.diinput_oleh)}</strong></div>`;
+                        }
+
                         const popup = `<div class="min-w-[190px] text-xs">
                             <div class="font-bold text-slate-900 text-sm mb-1">${esc(item.alamat || 'Titik Survei')}</div>
                             <div class="text-slate-500 mb-2">Kel. ${esc(item.kelurahan)}, Kec. ${esc(item.kecamatan)}</div>
+                            ${creatorHtml}
                             <div class="grid grid-cols-2 gap-1 py-1 border-y border-slate-100 mb-2 text-[11px]">
                                 <div>CCTV: <strong>${item.jumlah_cctv || 0} unit</strong></div>
                                 <div>WiFi AP: <strong>${item.jumlah_ap || 0} unit</strong></div>
                             </div>
-                            <a href="/survey/${item.id}" class="block text-center py-1 bg-emerald-600 text-white rounded font-semibold text-xs hover:bg-emerald-700">Lihat Detail</a>
+                            <a href="${item.detail_url}" class="block text-center py-1 bg-emerald-600 text-white rounded font-semibold text-xs hover:bg-emerald-700">Lihat Detail</a>
                         </div>`;
                         m.bindPopup(popup);
                     }

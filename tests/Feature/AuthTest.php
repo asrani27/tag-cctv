@@ -60,6 +60,22 @@ class AuthTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
+    public function test_inactive_users_cannot_authenticate(): void
+    {
+        $user = User::factory()->inactive()->create([
+            'email' => 'inactive@banjarmasin.go.id',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'inactive@banjarmasin.go.id',
+            'password' => 'password123',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
     public function test_guests_cannot_access_protected_routes(): void
     {
         $this->get('/dashboard')->assertRedirect(route('login'));

@@ -60,9 +60,26 @@
                         style="display: none;"
                     >
                         <div class="px-4 py-2">
-                            <p class="text-xs font-semibold text-slate-800">{{ auth()->user()->name ?? 'Administrator' }}</p>
+                            <div class="flex items-center justify-between gap-1 mb-0.5">
+                                <p class="text-xs font-semibold text-slate-800">{{ auth()->user()->name ?? 'Administrator' }}</p>
+                                @if (auth()->user()?->isSuperAdmin())
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-100 text-emerald-800">Superadmin</span>
+                                @else
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-medium bg-slate-100 text-slate-700">Surveyor</span>
+                                @endif
+                            </div>
                             <p class="text-[11px] text-slate-500 truncate">{{ auth()->user()->email ?? '' }}</p>
                         </div>
+                        @if (auth()->user()?->isSuperAdmin())
+                            <div class="py-1">
+                                <a href="{{ route('users.index') }}" class="w-full text-left px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                    </svg>
+                                    Manajemen Pengguna
+                                </a>
+                            </div>
+                        @endif
                         <div class="py-1">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

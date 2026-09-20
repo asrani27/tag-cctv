@@ -93,4 +93,19 @@ class SurveyRequest extends FormRequest
             'jumlah_provider' => ['nullable', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'latitude.numeric' => 'Latitude harus berupa angka yang valid.',
+            'latitude.between' => 'Latitude harus berada dalam rentang -90 sampai 90.',
+            'longitude.numeric' => 'Longitude harus berupa angka yang valid.',
+            'longitude.between' => 'Longitude harus berada dalam rentang -180 sampai 180.',
+        ];
+    }
 }
