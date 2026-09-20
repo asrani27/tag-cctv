@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SurveyExport;
 use App\Http\Requests\SurveyRequest;
 use App\Models\SurveyLocation;
 use App\Models\SurveyPhoto;
@@ -12,66 +13,45 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SurveyController extends Controller
 {
+    /**
+     * Collect filter parameters from the request into a reusable array.
+     */
+    private function getFilters(Request $request): array
+    {
+        $search = $request->input('search');
+        if ($search === null || $search === '') {
+            $search = $request->input('q', '');
+        }
+
+        return [
+            'search' => (string) $search,
+            'kecamatan' => (string) $request->input('kecamatan', ''),
+            'kelurahan' => (string) $request->input('kelurahan', ''),
+            'koneksi' => (string) $request->input('koneksi', ''),
+            'user_id' => (string) $request->input('user_id', ''),
+            'tanggal_mulai' => (string) $request->input('tanggal_mulai', ''),
+            'tanggal_akhir' => (string) $request->input('tanggal_akhir', ''),
+        ];
+    }
+
     /**
      * Display a listing of the surveys with search, filter, and pagination.
      */
     public function index(Request $request): View
     {
         $user = $request->user();
+        $filters = $this->getFilters($request);
 
-        // Base query scoped by user role
-        if ($user->isSuperAdmin()) {
-            $query = SurveyLocation::with(['user', 'photos'])->latest();
-
-            // Filter User khusus superadmin
-            if ($request->filled('user_id')) {
-                $filterUserId = $request->input('user_id');
-                if ($filterUserId === 'legacy') {
-                    $query->whereNull('user_id');
-                } else {
-                    $query->where('user_id', $filterUserId);
-                }
-            }
-        } else {
-            // User biasa HANYA boleh melihat data yang ia input sendiri
-            $query = SurveyLocation::with('photos')->where('user_id', $user->id)->latest();
-        }
-
-        // 1. Search alamat, kelurahan, atau kecamatan
-        $search = trim((string) ($request->input('search') ?? $request->input('q') ?? ''));
-        if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('alamat', 'like', "%{$search}%")
-                    ->orWhere('kelurahan', 'like', "%{$search}%")
-                    ->orWhere('kecamatan', 'like', "%{$search}%");
-            });
-        }
-
-        // 2. Filter Kecamatan
-        if ($request->filled('kecamatan')) {
-            $query->where('kecamatan', $request->input('kecamatan'));
-        }
-
-        // 3. Filter Kelurahan
-        if ($request->filled('kelurahan')) {
-            $query->where('kelurahan', $request->input('kelurahan'));
-        }
-
-        // 4. Filter Konektivitas
-        if ($request->filled('koneksi')) {
-            $koneksi = strtolower((string) $request->input('koneksi'));
-            if ($koneksi === 'fiber' || $koneksi === 'fo') {
-                $query->where('tersedia_fiber_optik', true);
-            } elseif ($koneksi === '4g' || $koneksi === '5g' || $koneksi === 'cellular') {
-                $query->where('tersedia_4g_5g', true);
-            } elseif ($koneksi === 'p2p') {
-                $query->where('tersedia_link_p2p', true);
-            }
-        }
+        $query = SurveyLocation::query()
+            ->applyFilters($filters, $user)
+            ->latest();
 
         $surveys = $query->paginate(10)->withQueryString();
 
@@ -93,13 +73,52 @@ class SurveyController extends Controller
             'kecamatanOptions' => $kecamatanOptions,
             'kelurahanOptions' => $kelurahanOptions,
             'userOptions' => $userOptions,
-            'currentSearch' => $request->input('search', ''),
+            'currentSearch' => $filters['search'],
             'currentKecamatan' => $request->input('kecamatan', ''),
             'currentKelurahan' => $request->input('kelurahan', ''),
             'currentKoneksi' => $request->input('koneksi', ''),
             'currentUserId' => $request->input('user_id', ''),
+            'currentTanggalMulai' => $request->input('tanggal_mulai', ''),
+            'currentTanggalAkhir' => $request->input('tanggal_akhir', ''),
             'isSuperAdmin' => $user->isSuperAdmin(),
         ]);
+    }
+
+    /**
+     * Export survey data to Excel (superadmin only).
+     *
+     * Uses the same filter scope as the index listing so results are consistent.
+     * Pagination does NOT limit export — all matching records are included.
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('export', SurveyLocation::class);
+
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'kecamatan' => ['nullable', 'string', 'max:255'],
+            'kelurahan' => ['nullable', 'string', 'max:255'],
+            'koneksi' => ['nullable', 'string', 'max:50'],
+            'user_id' => ['nullable', 'string', 'max:50'],
+            'tanggal_mulai' => ['nullable', 'date'],
+            'tanggal_akhir' => ['nullable', 'date'],
+        ]);
+
+        $filters = $this->getFilters($request);
+        $user = $request->user();
+
+        // Build an informative & sanitised filename
+        $parts = ['survey-cctv-wifi'];
+        if (! empty($filters['kecamatan'])) {
+            $parts[] = Str::slug($filters['kecamatan']);
+        }
+        if (! empty($filters['kelurahan'])) {
+            $parts[] = Str::slug($filters['kelurahan']);
+        }
+        $parts[] = now()->format('Y-m-d');
+        $filename = implode('-', $parts) . '.xlsx';
+
+        return Excel::download(new SurveyExport($filters, $user), $filename);
     }
 
     /**

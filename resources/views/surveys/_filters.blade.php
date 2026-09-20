@@ -77,12 +77,55 @@
         </div>
     </div>
 
+    <!-- Extended Filters Row: Kelurahan + Date Range -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+            <label for="kelurahan" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Kelurahan
+            </label>
+            <select
+                name="kelurahan"
+                id="kelurahan"
+                class="block w-full rounded-lg border border-slate-300 text-sm px-3 py-2 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60"
+            >
+                <option value="">Semua Kelurahan</option>
+                @foreach ($kelurahanOptions as $kel)
+                    <option value="{{ $kel }}" @selected($currentKelurahan === $kel)>{{ $kel }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="tanggal_mulai" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Tanggal Mulai
+            </label>
+            <input
+                type="date"
+                id="tanggal_mulai"
+                name="tanggal_mulai"
+                value="{{ $currentTanggalMulai }}"
+                class="block w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60"
+            />
+        </div>
+        <div>
+            <label for="tanggal_akhir" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Tanggal Akhir
+            </label>
+            <input
+                type="date"
+                id="tanggal_akhir"
+                name="tanggal_akhir"
+                value="{{ $currentTanggalAkhir }}"
+                class="block w-full rounded-lg border border-slate-300 text-sm px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60"
+            />
+        </div>
+    </div>
+
     <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
         <div class="text-slate-500">
             Total hasil: <span class="font-semibold text-slate-800">{{ $surveys->total() }}</span> data
         </div>
         <div class="flex items-center gap-2">
-            @if ($currentSearch || $currentKecamatan || $currentKelurahan || $currentKoneksi || $currentUserId)
+            @if ($currentSearch || $currentKecamatan || $currentKelurahan || $currentKoneksi || $currentUserId || $currentTanggalMulai || $currentTanggalAkhir)
                 <a href="{{ route('surveys.index') }}" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 hover:underline">
                     Reset Filter
                 </a>

@@ -187,6 +187,74 @@ class SurveyLocation extends Model
     }
 
     /**
+     * Reusable scope for filtering surveys by search, kecamatan, kelurahan, koneksi, user, and date range.
+     *
+     * Used by both the index listing (with pagination) and the export (without pagination)
+     * to guarantee consistent results.
+     */
+    public function scopeApplyFilters(Builder $query, array $filters, ?User $user = null): Builder
+    {
+        // Scope by ownership: regular users ONLY see their own data
+        if ($user && $user->isSuperAdmin()) {
+            $query->with(['user', 'photos']);
+
+            // Filter by user_id (superadmin only)
+            $userId = $filters['user_id'] ?? null;
+            if ($userId !== null && $userId !== '') {
+                if ($userId === 'legacy') {
+                    $query->whereNull('user_id');
+                } else {
+                    $query->where('user_id', $userId);
+                }
+            }
+        } elseif ($user) {
+            $query->with('photos')->where('user_id', $user->id);
+        }
+
+        // Search alamat, kelurahan, or kecamatan
+        $search = trim((string) (! empty($filters['search']) ? $filters['search'] : ($filters['q'] ?? '')));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('alamat', 'like', "%{$search}%")
+                    ->orWhere('kelurahan', 'like', "%{$search}%")
+                    ->orWhere('kecamatan', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Kecamatan
+        if (! empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+
+        // Filter Kelurahan
+        if (! empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+
+        // Filter Konektivitas
+        $koneksi = strtolower((string) ($filters['koneksi'] ?? ''));
+        if ($koneksi !== '') {
+            if ($koneksi === 'fiber' || $koneksi === 'fo') {
+                $query->where('tersedia_fiber_optik', true);
+            } elseif ($koneksi === '4g' || $koneksi === '5g' || $koneksi === 'cellular') {
+                $query->where('tersedia_4g_5g', true);
+            } elseif ($koneksi === 'p2p') {
+                $query->where('tersedia_link_p2p', true);
+            }
+        }
+
+        // Filter by date range
+        if (! empty($filters['tanggal_mulai'])) {
+            $query->whereDate('created_at', '>=', $filters['tanggal_mulai']);
+        }
+        if (! empty($filters['tanggal_akhir'])) {
+            $query->whereDate('created_at', '<=', $filters['tanggal_akhir']);
+        }
+
+        return $query;
+    }
+
+    /**
      * Check if survey location has valid coordinates.
      */
     public function hasCoordinates(): bool

@@ -16,6 +16,15 @@ class SurveyLocationPolicy
     }
 
     /**
+     * Determine whether the user can export surveys to Excel.
+     * Only superadmins are allowed to export.
+     */
+    public function export(User $user): bool
+    {
+        return $user->isActive() && $user->isSuperAdmin();
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, SurveyLocation $surveyLocation): bool

@@ -48,9 +48,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('surveys/photos/chunk/{uploadId}', [SurveyPhotoController::class, 'cancelUpload'])->name('surveys.photos.cancel');
     Route::delete('surveys/{survey}/photos/{photo}', [SurveyPhotoController::class, 'destroy'])->name('surveys.photos.destroy');
 
+    // Superadmin-only: Export Excel (defined before resource to avoid {survey} catch)
+    Route::middleware('superadmin')
+        ->get('surveys/export', [SurveyController::class, 'export'])
+        ->name('surveys.export');
+
     Route::resource('surveys', SurveyController::class);
 
-    // Superadmin-only User Management
+    // Superadmin-only routes
     Route::middleware('superadmin')->group(function () {
         Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::resource('users', UserController::class)->except(['show']);
