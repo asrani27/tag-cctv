@@ -58,10 +58,22 @@
             </div>
         </div>
 
-        <!-- Uploading indicator -->
-        <div x-show="isUploading" x-cloak class="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2 flex items-center gap-2">
-            <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-            Sedang mengupload foto...
+        <!-- Upload status banners -->
+        <div x-show="isUploading" x-cloak class="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2">
+            <svg class="animate-spin w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <span class="font-medium">Sedang mengupload foto...</span>
+        </div>
+
+        <div x-show="!isUploading && uploadStatus === 'success'" x-cloak class="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="font-medium">Upload selesai. Foto berhasil diunggah.</span>
+            <button type="button" @click="uploadStatus = 'idle'" class="ml-auto text-emerald-600 hover:text-emerald-800 p-0.5 rounded text-sm leading-none font-bold">&times;</button>
+        </div>
+
+        <div x-show="!isUploading && (uploadStatus === 'error' || hasError)" x-cloak class="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <span class="font-medium" x-text="lastErrorMessage ? ('Upload gagal: ' + lastErrorMessage) : 'Sebagian atau semua foto gagal diunggah.'"></span>
+            <button type="button" @click="uploadStatus = 'idle'" class="ml-auto text-rose-400 hover:text-rose-600 p-0.5 rounded text-sm leading-none font-bold">&times;</button>
         </div>
 
         <!-- Hidden fields for temp photo IDs -->

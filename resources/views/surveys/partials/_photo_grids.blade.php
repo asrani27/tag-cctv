@@ -40,13 +40,20 @@
                     </div>
                     <!-- Status badge -->
                     <div class="absolute top-1.5 left-1.5">
-                        <span x-show="item.status === 'complete'" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">✓</span>
-                        <span x-show="item.status === 'error'" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-700">✗</span>
+                        <span x-show="item.status === 'complete'" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Upload selesai
+                        </span>
+                        <span x-show="item.status === 'error'" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-700">
+                            <svg class="w-3 h-3 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Upload gagal
+                        </span>
                         <span x-show="item.status === 'uploading'" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700" x-text="item.progress + '%'"></span>
                     </div>
                     <div class="px-2 py-1.5">
                         <p class="text-[10px] text-slate-600 truncate" x-text="item.name"></p>
                         <p class="text-[10px] text-slate-400" x-text="formatSize(item.size)"></p>
+                        <p x-show="item.status === 'complete'" class="text-[10px] text-emerald-600 font-medium mt-0.5" x-text="surveyId ? 'Tersimpan ke survey' : 'Siap disimpan'"></p>
                         <p x-show="item.status === 'error'" class="text-[10px] text-rose-600 truncate mt-0.5" x-text="item.errorText"></p>
                     </div>
                     <!-- Action buttons -->
