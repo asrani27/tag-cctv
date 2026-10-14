@@ -38,6 +38,14 @@ class Kecamatan extends Model
     }
 
     /**
+     * Get all survey locations in this kecamatan.
+     */
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(SurveyLocation::class, 'kecamatan', 'name');
+    }
+
+    /**
      * Alias attribute for 'code' in English.
      */
     public function getCodeAttribute(): ?string

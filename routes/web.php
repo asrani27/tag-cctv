@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\KelurahanController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SurveyController;
@@ -59,5 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('superadmin')->group(function () {
         Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('kecamatans', KecamatanController::class)->except(['show']);
+        Route::resource('kelurahans', KelurahanController::class)->except(['show']);
     });
 });

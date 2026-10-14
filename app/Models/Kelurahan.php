@@ -6,6 +6,7 @@ use Database\Factories\KelurahanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kelurahan extends Model
 {
@@ -36,6 +37,14 @@ class Kelurahan extends Model
     public function kecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
+    }
+
+    /**
+     * Get all survey locations in this kelurahan.
+     */
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(SurveyLocation::class, 'kelurahan', 'name');
     }
 
     /**
