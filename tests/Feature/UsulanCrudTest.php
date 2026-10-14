@@ -86,4 +86,150 @@ class UsulanCrudTest extends TestCase
         $response->assertSee('Kategori Titik');
         $response->assertSee('Infrastruktur Penyangga');
     }
+
+    public function test_user_can_create_usulan_with_all_fields(): void
+    {
+        $payload = [
+            'latitude' => -3.3194372,
+            'longitude' => 114.5908123,
+            'kelurahan' => 'Kertak Baru Ilir',
+            'rt' => '05',
+            'nama_ketua_rt' => 'Haji Mansyur',
+            'no_hp' => '081234567890',
+            'nama_lokasi' => 'Gang',
+            'kategori_titik' => 'Pintu Masuk RT',
+            'infrastruktur_penyangga' => 'Tiang PLN',
+            'sumber_daya_listrik' => 'Ada',
+            'cctv_eksisting' => 'Belum',
+            'keterangan' => 'Gerbang masuk gang rawan kehilangan motor pada malam hari.',
+        ];
+
+        $response = $this->actingAs($this->surveyorA)->post(route('usulans.store'), $payload);
+
+        $response->assertRedirect(route('usulans.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('usulans', [
+            'user_id' => $this->surveyorA->id,
+            'kelurahan' => 'Kertak Baru Ilir',
+            'rt' => '05',
+            'nama_ketua_rt' => 'Haji Mansyur',
+            'no_hp' => '081234567890',
+            'nama_lokasi' => 'Gang',
+            'kategori_titik' => 'Pintu Masuk RT',
+            'infrastruktur_penyangga' => 'Tiang PLN',
+            'sumber_daya_listrik' => 'Ada',
+            'cctv_eksisting' => 'Belum',
+            'status' => 'Diajukan',
+        ]);
+    }
+
+    public function test_validation_requires_mandatory_fields(): void
+    {
+        $response = $this->actingAs($this->surveyorA)->post(route('usulans.store'), []);
+
+        $response->assertSessionHasErrors([
+            'latitude',
+            'longitude',
+            'kelurahan',
+            'rt',
+            'nama_lokasi',
+            'kategori_titik',
+        ]);
+    }
+
+    public function test_coordinate_boundaries_validation(): void
+    {
+        $response = $this->actingAs($this->surveyorA)->post(route('usulans.store'), [
+            'latitude' => 95, // invalid (>90)
+            'longitude' => -190, // invalid (<-180)
+            'kelurahan' => 'Kertak Baru Ilir',
+            'rt' => '01',
+            'nama_lokasi' => 'Gang',
+            'kategori_titik' => 'Persimpangan',
+        ]);
+
+        $response->assertSessionHasErrors(['latitude', 'longitude']);
+    }
+
+    public function test_surveyor_cannot_view_or_update_or_delete_other_user_usulan(): void
+    {
+        $usulanA = Usulan::factory()->create(['user_id' => $this->surveyorA->id]);
+
+        $response = $this->actingAs($this->surveyorB)->get(route('usulans.show', $usulanA));
+        $response->assertStatus(403);
+
+        $response = $this->actingAs($this->surveyorB)->get(route('usulans.edit', $usulanA));
+        $response->assertStatus(403);
+
+        $response = $this->actingAs($this->surveyorB)->put(route('usulans.update', $usulanA), [
+            'latitude' => -3.31,
+            'longitude' => 114.59,
+            'kelurahan' => 'Kertak Baru Ilir',
+            'rt' => '01',
+            'nama_lokasi' => 'Jalan',
+            'kategori_titik' => 'Persimpangan',
+        ]);
+        $response->assertStatus(403);
+
+        $response = $this->actingAs($this->surveyorB)->delete(route('usulans.destroy', $usulanA));
+        $response->assertStatus(403);
+    }
+
+    public function test_superadmin_can_update_and_change_status(): void
+    {
+        $usulan = Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+            'status' => 'Diajukan',
+        ]);
+
+        $response = $this->actingAs($this->superadmin)->put(route('usulans.update', $usulan), [
+            'latitude' => $usulan->latitude,
+            'longitude' => $usulan->longitude,
+            'kelurahan' => $usulan->kelurahan,
+            'rt' => $usulan->rt,
+            'nama_lokasi' => $usulan->nama_lokasi,
+            'kategori_titik' => $usulan->kategori_titik,
+            'status' => 'Disetujui',
+        ]);
+
+        $response->assertRedirect(route('usulans.show', $usulan));
+        $this->assertDatabaseHas('usulans', [
+            'id' => $usulan->id,
+            'status' => 'Disetujui',
+        ]);
+    }
+
+    public function test_filtering_and_search_on_index(): void
+    {
+        Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+            'kelurahan' => 'Kertak Baru Ilir',
+            'nama_lokasi' => 'Gang',
+            'kategori_titik' => 'Persimpangan',
+            'nama_ketua_rt' => 'Haji Mansyur RT05',
+        ]);
+        Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+            'kelurahan' => 'Melayu',
+            'nama_lokasi' => 'Jalan',
+            'kategori_titik' => 'Rawan Kriminalitas',
+            'nama_ketua_rt' => 'Pak Joko RT02',
+        ]);
+
+        // Search term
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.index', ['search' => 'Mansyur']));
+        $response->assertSee('Haji Mansyur RT05');
+        $response->assertDontSee('Pak Joko RT02');
+
+        // Filter kelurahan
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.index', ['kelurahan' => 'Melayu']));
+        $response->assertSee('Pak Joko RT02');
+        $response->assertDontSee('Haji Mansyur RT05');
+
+        // Filter nama lokasi
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.index', ['nama_lokasi' => 'Gang']));
+        $response->assertSee('Haji Mansyur RT05');
+        $response->assertDontSee('Pak Joko RT02');
+    }
 }

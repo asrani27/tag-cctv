@@ -26,23 +26,23 @@ class UsulanRequest extends FormRequest
     {
         return [
             // 1. Koordinat Lokasi Peta
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
 
             // 2. Kelurahan & Kecamatan
-            'kelurahan' => ['nullable', 'string', 'max:255'],
+            'kelurahan' => ['required', 'string', 'max:255'],
             'kecamatan' => ['nullable', 'string', 'max:255'],
 
             // 3. RT, Nama Ketua RT, No HP
-            'rt' => ['nullable', 'string', 'max:20'],
+            'rt' => ['required', 'string', 'max:20'],
             'nama_ketua_rt' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['nullable', 'string', 'max:30'],
 
             // 4. Nama Lokasi / Titik Usulan (Gang/Jalan/Fasum)
-            'nama_lokasi' => ['nullable', 'string', Rule::in(Usulan::NAMA_LOKASI_OPTIONS)],
+            'nama_lokasi' => ['required', 'string', Rule::in(Usulan::NAMA_LOKASI_OPTIONS)],
 
             // 5. Kategori Titik (Persimpangan/ Pintu Masuk RT/ Rawan Kriminalitas/ Fasos-Fasum)
-            'kategori_titik' => ['nullable', 'string', Rule::in(Usulan::KATEGORI_TITIK_OPTIONS)],
+            'kategori_titik' => ['required', 'string', Rule::in(Usulan::KATEGORI_TITIK_OPTIONS)],
 
             // 6. Infrastruktur Penyangga (Tiang PLN / Tiang Telkom / Bangunan Posyandu/Poskamling / Belum Ada)
             'infrastruktur_penyangga' => ['nullable', 'string', Rule::in(Usulan::INFRASTRUKTUR_PENYANGGA_OPTIONS)],
@@ -57,7 +57,7 @@ class UsulanRequest extends FormRequest
             'keterangan' => ['nullable', 'string'],
 
             // Status Usulan (opsional)
-            'status' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'string', Rule::in(Usulan::STATUS_OPTIONS)],
         ];
     }
 
