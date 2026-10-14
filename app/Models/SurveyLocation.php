@@ -58,6 +58,7 @@ class SurveyLocation extends Model
             'Teluk Tiram',
         ],
         'Banjarmasin Selatan' => [
+            'Basirih Selatan',
             'Kelayan Barat',
             'Kelayan Dalam',
             'Kelayan Selatan',
@@ -93,6 +94,7 @@ class SurveyLocation extends Model
             'Pemurus Luar',
             'Pengambangan',
             'Sungai Bilu',
+            'Sungai Lulut',
         ],
         'Banjarmasin Utara' => [
             'Alalak Selatan',

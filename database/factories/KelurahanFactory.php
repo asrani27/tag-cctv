@@ -20,6 +20,7 @@ class KelurahanFactory extends Factory
     {
         return [
             'kecamatan_id' => Kecamatan::factory(),
+            'kode' => fake()->unique()->numerify('63.71.01.####'),
             'name' => fake()->streetName(),
         ];
     }

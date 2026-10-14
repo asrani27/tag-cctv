@@ -25,6 +25,7 @@ class Kecamatan extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'kode',
         'name',
     ];
 
@@ -34,6 +35,22 @@ class Kecamatan extends Model
     public function kelurahans(): HasMany
     {
         return $this->hasMany(Kelurahan::class, 'kecamatan_id');
+    }
+
+    /**
+     * Alias attribute for 'code' in English.
+     */
+    public function getCodeAttribute(): ?string
+    {
+        return $this->kode;
+    }
+
+    /**
+     * Alias mutator for 'code' in English.
+     */
+    public function setCodeAttribute(?string $value): void
+    {
+        $this->attributes['kode'] = $value;
     }
 
     /**

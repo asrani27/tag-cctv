@@ -18,6 +18,7 @@ class KecamatanFactory extends Factory
     public function definition(): array
     {
         return [
+            'kode' => fake()->unique()->numerify('63.71.##'),
             'name' => fake()->unique()->city(),
         ];
     }

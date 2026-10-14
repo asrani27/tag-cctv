@@ -26,6 +26,7 @@ class Kelurahan extends Model
      */
     protected $fillable = [
         'kecamatan_id',
+        'kode',
         'name',
     ];
 
@@ -35,6 +36,22 @@ class Kelurahan extends Model
     public function kecamatan(): BelongsTo
     {
         return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
+    }
+
+    /**
+     * Alias attribute for 'code' in English.
+     */
+    public function getCodeAttribute(): ?string
+    {
+        return $this->kode;
+    }
+
+    /**
+     * Alias mutator for 'code' in English.
+     */
+    public function setCodeAttribute(?string $value): void
+    {
+        $this->attributes['kode'] = $value;
     }
 
     /**

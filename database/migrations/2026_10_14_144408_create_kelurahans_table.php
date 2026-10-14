@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\SurveyLocation;
+use Database\Seeders\KecamatanSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('kelurahans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kecamatan_id')->constrained('kecamatans')->cascadeOnDelete();
+            $table->string('kode', 20)->nullable()->unique();
             $table->string('name');
             $table->timestamps();
 
@@ -30,23 +31,25 @@ return new class extends Migration
             DB::statement('CREATE VIEW IF NOT EXISTS kelurahan AS SELECT * FROM kelurahans');
         }
 
-        // Seed initial data from SurveyLocation::KELURAHAN_BY_KECAMATAN
+        // Seed initial data from KecamatanSeeder::DATA
         $now = now();
-        foreach (SurveyLocation::KELURAHAN_BY_KECAMATAN as $kecamatanName => $kelurahanList) {
-            $existing = DB::table('kecamatans')->where('name', $kecamatanName)->first();
+        foreach (KecamatanSeeder::DATA as $kecamatanData) {
+            $existing = DB::table('kecamatans')->where('kode', $kecamatanData['kode'])->first();
             $kecamatanId = $existing
                 ? $existing->id
                 : DB::table('kecamatans')->insertGetId([
-                    'name' => $kecamatanName,
+                    'kode' => $kecamatanData['kode'],
+                    'name' => $kecamatanData['name'],
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
 
             $kelurahanRows = [];
-            foreach ($kelurahanList as $kelurahanName) {
+            foreach ($kecamatanData['kelurahans'] as $kelurahan) {
                 $kelurahanRows[] = [
                     'kecamatan_id' => $kecamatanId,
-                    'name' => $kelurahanName,
+                    'kode' => $kelurahan['kode'],
+                    'name' => $kelurahan['name'],
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
