@@ -10,6 +10,7 @@ use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyPhotoController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UsulanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,6 +57,7 @@ Route::middleware('auth')->group(function () {
         ->name('surveys.export');
 
     Route::resource('surveys', SurveyController::class);
+    Route::resource('usulans', UsulanController::class);
 
     // Superadmin-only routes
     Route::middleware('superadmin')->group(function () {

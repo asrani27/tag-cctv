@@ -69,6 +69,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the usulans created by the user.
+     */
+    public function usulans(): HasMany
+    {
+        return $this->hasMany(Usulan::class, 'user_id');
+    }
+
+    /**
      * Get the photos uploaded by the user.
      */
     public function photos(): HasMany
