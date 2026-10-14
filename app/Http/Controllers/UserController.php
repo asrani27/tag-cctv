@@ -56,7 +56,7 @@ class UserController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $user = new User();
+        $user = new User;
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->password = Hash::make($validated['password']);

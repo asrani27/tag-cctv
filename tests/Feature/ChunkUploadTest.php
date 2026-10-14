@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\SurveyLocation;
-use App\Models\SurveyPhoto;
-use App\Models\SurveyTempPhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -17,7 +15,9 @@ class ChunkUploadTest extends TestCase
     use RefreshDatabase;
 
     private User $superadmin;
+
     private User $userA;
+
     private User $userB;
 
     protected function setUp(): void
@@ -33,7 +33,9 @@ class ChunkUploadTest extends TestCase
     {
         foreach (['app/chunks', 'app/temp_merged'] as $dir) {
             $path = storage_path($dir);
-            if (File::isDirectory($path)) File::deleteDirectory($path);
+            if (File::isDirectory($path)) {
+                File::deleteDirectory($path);
+            }
         }
         parent::tearDown();
     }
@@ -45,7 +47,10 @@ class ChunkUploadTest extends TestCase
         imagejpeg($img, null, 100);
         $jpeg = ob_get_clean();
         imagedestroy($img);
-        if (strlen($jpeg) < $size) $jpeg .= str_repeat("\x00", $size - strlen($jpeg));
+        if (strlen($jpeg) < $size) {
+            $jpeg .= str_repeat("\x00", $size - strlen($jpeg));
+        }
+
         return $jpeg;
     }
 
@@ -57,12 +62,17 @@ class ChunkUploadTest extends TestCase
             $data = substr($content, $i * $chunk, $chunk);
             $file = UploadedFile::fake()->createWithContent("c_{$i}", $data);
             $p = ['upload_id' => $uid, 'chunk_index' => $i, 'total_chunks' => $total, 'original_filename' => $name, 'chunk' => $file];
-            if ($sid) $p['survey_id'] = $sid;
+            if ($sid) {
+                $p['survey_id'] = $sid;
+            }
             $this->actingAs($user)->post(route('surveys.photos.chunk'), $p)->assertOk();
         }
         $cp = ['upload_id' => $uid, 'total_chunks' => $total, 'original_filename' => $name];
-        if ($sid) $cp['survey_id'] = $sid;
+        if ($sid) {
+            $cp['survey_id'] = $sid;
+        }
         $res = $this->actingAs($user)->postJson(route('surveys.photos.complete'), $cp);
+
         return ['response' => $res, 'upload_id' => $uid];
     }
 
@@ -221,4 +231,3 @@ class ChunkUploadTest extends TestCase
         $this->assertDatabaseMissing('survey_temp_photos', ['upload_id' => $r2['upload_id']]);
     }
 }
-

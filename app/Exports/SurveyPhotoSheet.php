@@ -14,13 +14,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SurveyPhotoSheet implements
-    FromQuery,
-    ShouldAutoSize,
-    WithHeadings,
-    WithMapping,
-    WithStyles,
-    WithTitle
+class SurveyPhotoSheet implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     public function __construct(
         private readonly array $filters,

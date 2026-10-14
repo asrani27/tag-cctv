@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\SurveyLocation;
 use App\Models\SurveyPhoto;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -149,7 +148,7 @@ class PublicPagesTest extends TestCase
         SurveyPhoto::factory()->create([
             'survey_location_id' => $survey->id,
             'original_name' => 'tiang_cctv_depan.jpg',
-            'file_path' => 'surveys/' . $survey->id . '/tiang_cctv_depan.jpg',
+            'file_path' => 'surveys/'.$survey->id.'/tiang_cctv_depan.jpg',
         ]);
 
         $response = $this->get("/survey/{$survey->id}");

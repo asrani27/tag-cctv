@@ -82,5 +82,4 @@ class AuthTest extends TestCase
         $this->get('/surveys')->assertRedirect(route('login'));
         $this->get('/surveys/create')->assertRedirect(route('login'));
     }
-
 }

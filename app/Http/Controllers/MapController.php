@@ -71,10 +71,8 @@ class MapController extends Controller
             ];
         });
 
-        $kecamatanOptions = SurveyLocation::KECAMATAN_LIST;
-        $kelurahanOptions = ($currentKecamatan && isset(SurveyLocation::KELURAHAN_BY_KECAMATAN[$currentKecamatan]))
-            ? SurveyLocation::KELURAHAN_BY_KECAMATAN[$currentKecamatan]
-            : [];
+        $kecamatanOptions = SurveyLocation::getKecamatanList();
+        $kelurahanOptions = SurveyLocation::getKelurahanByKecamatan($currentKecamatan);
 
         return view('map.index', [
             'surveys' => $surveys,
@@ -147,5 +145,3 @@ class MapController extends Controller
         ]);
     }
 }
-
-

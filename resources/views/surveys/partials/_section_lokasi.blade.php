@@ -138,7 +138,17 @@
                 label="Kelurahan"
                 :value="$survey->kelurahan ?? null"
                 placeholder="Contoh: Kertak Baru Ilir"
+                list="kelurahan-suggestions"
             />
+            <datalist id="kelurahan-suggestions">
+                @if (isset($kelurahanMap))
+                    @foreach ($kelurahanMap as $kec => $kels)
+                        @foreach ($kels as $kel)
+                            <option value="{{ $kel }}">{{ $kel }} ({{ $kec }})</option>
+                        @endforeach
+                    @endforeach
+                @endif
+            </datalist>
             <x-select
                 name="kecamatan"
                 label="Kecamatan"

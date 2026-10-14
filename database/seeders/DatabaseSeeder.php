@@ -47,6 +47,8 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        // Seed Kecamatan & Kelurahan master data
+        $this->call(KecamatanSeeder::class);
 
         // Seed sample survey locations if empty
         if (SurveyLocation::count() === 0) {

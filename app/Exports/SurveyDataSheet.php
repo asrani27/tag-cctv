@@ -16,15 +16,7 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SurveyDataSheet implements
-    FromQuery,
-    ShouldAutoSize,
-    WithColumnFormatting,
-    WithHeadings,
-    WithMapping,
-    WithStrictNullComparison,
-    WithStyles,
-    WithTitle
+class SurveyDataSheet implements FromQuery, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithMapping, WithStrictNullComparison, WithStyles, WithTitle
 {
     public function __construct(
         private readonly array $filters,
@@ -154,4 +146,3 @@ class SurveyDataSheet implements
         return (bool) $value ? 'Ya' : 'Tidak';
     }
 }
-

@@ -18,6 +18,7 @@ class SurveyExportTest extends TestCase
     use RefreshDatabase;
 
     private User $superadmin;
+
     private User $surveyor;
 
     protected function setUp(): void
@@ -67,7 +68,7 @@ class SurveyExportTest extends TestCase
 
         $response->assertOk();
 
-        $expectedFilename = 'survey-cctv-wifi-' . now()->format('Y-m-d') . '.xlsx';
+        $expectedFilename = 'survey-cctv-wifi-'.now()->format('Y-m-d').'.xlsx';
         Excel::assertDownloaded($expectedFilename, function (SurveyExport $export) {
             $sheets = $export->sheets();
             $this->assertCount(3, $sheets);
@@ -90,7 +91,7 @@ class SurveyExportTest extends TestCase
 
         $response->assertOk();
 
-        $expectedFilename = 'survey-cctv-wifi-banjarmasin-barat-teluk-tiram-' . now()->format('Y-m-d') . '.xlsx';
+        $expectedFilename = 'survey-cctv-wifi-banjarmasin-barat-teluk-tiram-'.now()->format('Y-m-d').'.xlsx';
         Excel::assertDownloaded($expectedFilename);
     }
 
@@ -145,14 +146,14 @@ class SurveyExportTest extends TestCase
             'survey_location_id' => $survey1->id,
             'user_id' => $this->surveyor->id,
             'original_name' => 'photo_tengah.jpg',
-            'file_path' => 'surveys/' . $survey1->id . '/photo_tengah.jpg',
+            'file_path' => 'surveys/'.$survey1->id.'/photo_tengah.jpg',
         ]);
 
         $photo2 = SurveyPhoto::factory()->create([
             'survey_location_id' => $survey2->id,
             'user_id' => $this->surveyor->id,
             'original_name' => 'photo_selatan.jpg',
-            'file_path' => 'surveys/' . $survey2->id . '/photo_selatan.jpg',
+            'file_path' => 'surveys/'.$survey2->id.'/photo_selatan.jpg',
         ]);
 
         $photoSheet = new SurveyPhotoSheet(['kecamatan' => 'Banjarmasin Tengah'], $this->superadmin);
@@ -161,7 +162,6 @@ class SurveyExportTest extends TestCase
         $this->assertTrue($photos->contains('id', $photo1->id));
         $this->assertFalse($photos->contains('id', $photo2->id));
     }
-
 
     public function test_export_summary_sheet_calculates_correct_totals(): void
     {
@@ -246,5 +246,4 @@ class SurveyExportTest extends TestCase
         );
         $this->assertStringContainsString('survey-cctv-wifi', $response->headers->get('content-disposition') ?? '');
     }
-
 }

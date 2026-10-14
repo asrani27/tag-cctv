@@ -285,6 +285,89 @@ class SurveyLocation extends Model
     {
         return $this->hasMany(SurveyPhoto::class, 'survey_location_id')->orderBy('sort_order')->orderBy('id');
     }
+
+    /**
+     * Get list of Kecamatan from database or fallback to constants.
+     *
+     * @return list<string>
+     */
+    public static function getKecamatanList(): array
+    {
+        try {
+            $list = Kecamatan::orderBy('name')->pluck('name')->all();
+            if (! empty($list)) {
+                return $list;
+            }
+        } catch (\Throwable) {
+            // Fallback if table does not exist
+        }
+
+        return self::KECAMATAN_LIST;
+    }
+
+    /**
+     * Get kelurahan list grouped by kecamatan name from database or fallback to constants.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function getKelurahanMap(): array
+    {
+        try {
+            $kecamatans = Kecamatan::with(['kelurahans' => fn ($q) => $q->orderBy('name')])
+                ->orderBy('name')
+                ->get();
+
+            if ($kecamatans->isNotEmpty()) {
+                $map = [];
+                foreach ($kecamatans as $kecamatan) {
+                    $map[$kecamatan->name] = $kecamatan->kelurahans->pluck('name')->all();
+                }
+
+                return $map;
+            }
+        } catch (\Throwable) {
+            // Fallback if table does not exist
+        }
+
+        return self::KELURAHAN_BY_KECAMATAN;
+    }
+
+    /**
+     * Get kelurahan list for a specific kecamatan.
+     *
+     * @return list<string>
+     */
+    public static function getKelurahanByKecamatan(?string $kecamatanName): array
+    {
+        if (empty($kecamatanName)) {
+            return [];
+        }
+
+        try {
+            $kecamatan = Kecamatan::where('name', $kecamatanName)->first();
+            if ($kecamatan) {
+                return $kecamatan->kelurahans()->orderBy('name')->pluck('name')->all();
+            }
+        } catch (\Throwable) {
+            // Fallback if table does not exist
+        }
+
+        return self::KELURAHAN_BY_KECAMATAN[$kecamatanName] ?? [];
+    }
+
+    /**
+     * Get the associated Kecamatan model.
+     */
+    public function kecamatanModel(): BelongsTo
+    {
+        return $this->belongsTo(Kecamatan::class, 'kecamatan', 'name');
+    }
+
+    /**
+     * Get the associated Kelurahan model.
+     */
+    public function kelurahanModel(): BelongsTo
+    {
+        return $this->belongsTo(Kelurahan::class, 'kelurahan', 'name');
+    }
 }
-
-

@@ -79,7 +79,7 @@ class SurveyPhoto extends Model
      */
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . ltrim($this->file_path, '/'));
+        return asset('storage/'.ltrim($this->file_path, '/'));
     }
 
     /**
@@ -90,13 +90,13 @@ class SurveyPhoto extends Model
         $bytes = (int) $this->file_size;
 
         if ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . ' MB';
+            return number_format($bytes / 1048576, 2).' MB';
         }
 
         if ($bytes >= 1024) {
-            return number_format($bytes / 1024, 1) . ' KB';
+            return number_format($bytes / 1024, 1).' KB';
         }
 
-        return $bytes . ' B';
+        return $bytes.' B';
     }
 }

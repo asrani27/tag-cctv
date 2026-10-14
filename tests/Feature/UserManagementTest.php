@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\SurveyLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -13,6 +12,7 @@ class UserManagementTest extends TestCase
     use RefreshDatabase;
 
     private User $superadmin;
+
     private User $surveyor;
 
     protected function setUp(): void

@@ -1,47 +1,62 @@
 <laravel-boost-guidelines>
-# Laravel Application
+=== foundation rules ===
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+# Laravel Boost Guidelines
 
-## Prerequisites
+## Foundational Context
 
-Verify that PHP and Composer are available:
+This application is a Laravel application running on PHP 8.3. Always use the APIs that match the installed major version of each package — do not assume a version.
 
-```sh
-php -v
-composer -V
-```
+Before relying on a package's API, confirm its installed version:
+- PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
+- JS packages: check `package.json` for the installed versions.
 
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
+## Conventions
 
-macOS:
+- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
+- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
+- Check for existing components to reuse before writing a new one.
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
+## Application Structure & Architecture
 
-Windows PowerShell:
+- Stick to existing directory structure; don't create new base folders without approval.
+- Do not change the application's dependencies without approval.
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
+=== boost rules ===
 
-Linux:
+# Laravel Boost
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
+- Laravel Boost is an MCP server with tools designed specifically for this application. Prefer Boost tools over manual alternatives like shell commands or file reads.
+- Run tests and linting after making changes.
 
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
+=== php rules ===
 
-## Agent Setup
+# PHP
 
-Install Laravel Boost from the application root before making application changes:
+- Always use curly braces for control structures, even for single-line blocks.
+- Prefer explicit method visibility (`public`, `protected`, `private`) over defaults.
+- Always declare types for parameters, return values, and properties where possible. Use union and intersection types when appropriate.
+- Prefer constructor property promotion where possible.
+- Avoid using `eval()`, `extract()`, or variable variables (`$$var`).
+- Keep classes small and focused on a single responsibility.
+- Use docblocks only to document complex logic or provide type info where PHP's type system is insufficient. Do not write obvious comments like `// gets the id`.
+- Avoid dead code: remove unused `use` statements, variables, and methods.
+- Avoid deep nesting: use early returns and guard clauses instead of multiple nested `if`/`else` blocks.
+- Do not add comments that simply repeat the method or variable name. Prefer clear code over inline comments. Only add inline comments for exceptionally complex logic.
+- Use array shape type definitions in PHPDoc blocks.
 
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
+=== pint/core rules ===
 
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
+# Laravel Pint Code Formatter
+
+- If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
+- Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
+
+=== pest/core rules ===
+
+# Pest
+
+- This project uses Pest. Create tests with `php artisan make:test --pest {name}`.
+- Run `php artisan test --compact` to verify changes.
+
 </laravel-boost-guidelines>

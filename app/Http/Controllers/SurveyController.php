@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\SurveyExport;
 use App\Http\Requests\SurveyRequest;
+use App\Models\Kelurahan;
 use App\Models\SurveyLocation;
 use App\Models\SurveyPhoto;
 use App\Models\SurveyTempPhoto;
@@ -56,13 +57,24 @@ class SurveyController extends Controller
         $surveys = $query->paginate(10)->withQueryString();
 
         // Options for dropdown filters
-        $kecamatanOptions = SurveyLocation::KECAMATAN_LIST;
+        $kecamatanOptions = SurveyLocation::getKecamatanList();
 
-        $kelurahanOptions = SurveyLocation::whereNotNull('kelurahan')
-            ->where('kelurahan', '!=', '')
-            ->distinct()
-            ->orderBy('kelurahan')
-            ->pluck('kelurahan');
+        try {
+            $kelurahanOptions = Kelurahan::orderBy('name')->pluck('name')->unique()->values();
+            if ($kelurahanOptions->isEmpty()) {
+                $kelurahanOptions = SurveyLocation::whereNotNull('kelurahan')
+                    ->where('kelurahan', '!=', '')
+                    ->distinct()
+                    ->orderBy('kelurahan')
+                    ->pluck('kelurahan');
+            }
+        } catch (\Throwable) {
+            $kelurahanOptions = SurveyLocation::whereNotNull('kelurahan')
+                ->where('kelurahan', '!=', '')
+                ->distinct()
+                ->orderBy('kelurahan')
+                ->pluck('kelurahan');
+        }
 
         $userOptions = $user->isSuperAdmin()
             ? User::orderBy('name')->get(['id', 'name', 'email'])
@@ -116,7 +128,7 @@ class SurveyController extends Controller
             $parts[] = Str::slug($filters['kelurahan']);
         }
         $parts[] = now()->format('Y-m-d');
-        $filename = implode('-', $parts) . '.xlsx';
+        $filename = implode('-', $parts).'.xlsx';
 
         return Excel::download(new SurveyExport($filters, $user), $filename);
     }
@@ -129,8 +141,8 @@ class SurveyController extends Controller
         Gate::authorize('create', SurveyLocation::class);
 
         return view('surveys.create', [
-            'kecamatanList' => SurveyLocation::KECAMATAN_LIST,
-            'kelurahanMap' => SurveyLocation::KELURAHAN_BY_KECAMATAN,
+            'kecamatanList' => SurveyLocation::getKecamatanList(),
+            'kelurahanMap' => SurveyLocation::getKelurahanMap(),
         ]);
     }
 
@@ -214,8 +226,8 @@ class SurveyController extends Controller
 
         return view('surveys.edit', [
             'survey' => $survey,
-            'kecamatanList' => SurveyLocation::KECAMATAN_LIST,
-            'kelurahanMap' => SurveyLocation::KELURAHAN_BY_KECAMATAN,
+            'kecamatanList' => SurveyLocation::getKecamatanList(),
+            'kelurahanMap' => SurveyLocation::getKelurahanMap(),
         ]);
     }
 
@@ -247,4 +259,3 @@ class SurveyController extends Controller
             ->with('success', 'Data survey berhasil dihapus.');
     }
 }
-

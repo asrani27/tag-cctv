@@ -24,8 +24,8 @@ class SurveyPhotoFactory extends Factory
         return [
             'survey_location_id' => SurveyLocation::factory(),
             'user_id' => User::factory(),
-            'file_path' => 'surveys/test/' . fake()->uuid() . '.jpg',
-            'original_name' => fake()->word() . '.jpg',
+            'file_path' => 'surveys/test/'.fake()->uuid().'.jpg',
+            'original_name' => fake()->word().'.jpg',
             'mime_type' => 'image/jpeg',
             'file_size' => fake()->numberBetween(1024, 5242880),
             'sort_order' => 0,

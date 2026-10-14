@@ -80,4 +80,3 @@ class SurveyLocationPolicy
         return $surveyLocation->user_id !== null && $surveyLocation->user_id === $user->id;
     }
 }
-

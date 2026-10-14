@@ -52,10 +52,8 @@ class PublicSurveyController extends Controller
 
         $surveys = $query->paginate(12)->withQueryString();
 
-        $kecamatanList = SurveyLocation::KECAMATAN_LIST;
-        $kelurahanList = ($currentKecamatan && isset(SurveyLocation::KELURAHAN_BY_KECAMATAN[$currentKecamatan]))
-            ? SurveyLocation::KELURAHAN_BY_KECAMATAN[$currentKecamatan]
-            : [];
+        $kecamatanList = SurveyLocation::getKecamatanList();
+        $kelurahanList = SurveyLocation::getKelurahanByKecamatan($currentKecamatan);
 
         return view('public.surveys.index', compact(
             'surveys',

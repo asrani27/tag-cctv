@@ -30,5 +30,3 @@ class ExampleTest extends TestCase
         $response->assertSee('Dashboard Admin');
     }
 }
-
-

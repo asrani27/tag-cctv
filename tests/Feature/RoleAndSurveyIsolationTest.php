@@ -12,7 +12,9 @@ class RoleAndSurveyIsolationTest extends TestCase
     use RefreshDatabase;
 
     private User $superadmin;
+
     private User $userA;
+
     private User $userB;
 
     protected function setUp(): void

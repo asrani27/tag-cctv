@@ -132,6 +132,7 @@ class SurveyPhotoController extends Controller
 
         if (! $destHandle) {
             File::deleteDirectory($chunkDir);
+
             return response()->json(['message' => 'Gagal membuat file sementara untuk penggabungan.'], 500);
         }
 
@@ -152,6 +153,7 @@ class SurveyPhotoController extends Controller
 
         return $this->processAndStoreMergedPhoto($userId, $uploadId, $cleanOriginalName, $mergedTempPath, $chunkDir, $survey);
     }
+
     /**
      * Validate and store the merged photo permanently or temporarily.
      */
@@ -175,6 +177,7 @@ class SurveyPhotoController extends Controller
         if (! in_array($detectedMime, $allowedMimes, true)) {
             @unlink($mergedTempPath);
             File::deleteDirectory($chunkDir);
+
             return response()->json([
                 'message' => 'File harus berupa gambar dengan format JPEG, PNG, atau WebP yang valid.',
             ], 422);
@@ -183,8 +186,9 @@ class SurveyPhotoController extends Controller
         if ($fileSize > $maxFileSize || $fileSize === 0) {
             @unlink($mergedTempPath);
             File::deleteDirectory($chunkDir);
+
             return response()->json([
-                'message' => 'Ukuran file melebihi batas maksimum ' . number_format($maxFileSize / 1048576, 1) . ' MB.',
+                'message' => 'Ukuran file melebihi batas maksimum '.number_format($maxFileSize / 1048576, 1).' MB.',
             ], 422);
         }
 
@@ -192,6 +196,7 @@ class SurveyPhotoController extends Controller
         if ($imageInfo === false || empty($imageInfo[0]) || empty($imageInfo[1])) {
             @unlink($mergedTempPath);
             File::deleteDirectory($chunkDir);
+
             return response()->json([
                 'message' => 'File gambar tidak valid atau rusak.',
             ], 422);
@@ -199,7 +204,7 @@ class SurveyPhotoController extends Controller
 
         $extMap = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
         $safeExt = $extMap[$detectedMime] ?? 'jpg';
-        $finalFilename = Str::uuid()->toString() . '.' . $safeExt;
+        $finalFilename = Str::uuid()->toString().'.'.$safeExt;
 
         File::deleteDirectory($chunkDir);
         $publicDisk = Storage::disk('public');
@@ -279,6 +284,7 @@ class SurveyPhotoController extends Controller
             ],
         ]);
     }
+
     /**
      * Delete temporary upload / cancel upload in progress.
      */
@@ -333,5 +339,3 @@ class SurveyPhotoController extends Controller
         return back()->with('success', "Foto {$photoName} berhasil dihapus.");
     }
 }
-
-

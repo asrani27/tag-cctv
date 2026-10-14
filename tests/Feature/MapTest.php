@@ -42,4 +42,3 @@ class MapTest extends TestCase
         $response->assertSee('Peta Sebaran Titik Survei');
     }
 }
-

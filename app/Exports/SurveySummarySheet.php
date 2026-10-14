@@ -12,11 +12,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SurveySummarySheet implements
-    FromCollection,
-    ShouldAutoSize,
-    WithStyles,
-    WithTitle
+class SurveySummarySheet implements FromCollection, ShouldAutoSize, WithStyles, WithTitle
 {
     public function __construct(
         private readonly array $filters,
@@ -96,7 +92,7 @@ class SurveySummarySheet implements
 
         $rows->push(['', '']);
         $rows->push(['Tanggal Export', now()->format('Y-m-d H:i:s')]);
-        $rows->push(['Diexport Oleh', $this->user->name . ' (' . $this->user->email . ')']);
+        $rows->push(['Diexport Oleh', $this->user->name.' ('.$this->user->email.')']);
 
         return $rows;
     }

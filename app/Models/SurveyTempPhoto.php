@@ -69,6 +69,6 @@ class SurveyTempPhoto extends Model
      */
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . ltrim($this->file_path, '/'));
+        return asset('storage/'.ltrim($this->file_path, '/'));
     }
 }

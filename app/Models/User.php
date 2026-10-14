@@ -76,4 +76,3 @@ class User extends Authenticatable
         return $this->hasMany(SurveyPhoto::class, 'user_id');
     }
 }
-

@@ -123,7 +123,7 @@ class SurveyCrudTest extends TestCase
             'longitude' => 114.590823,
         ]);
 
-        $response = $this->actingAs($this->user)->get('/surveys/' . $survey->id);
+        $response = $this->actingAs($this->user)->get('/surveys/'.$survey->id);
 
         $response->assertStatus(200);
         $response->assertSee('Siring Menara Pandang');
@@ -138,7 +138,7 @@ class SurveyCrudTest extends TestCase
             'longitude' => null,
         ]);
 
-        $response = $this->actingAs($this->user)->get('/surveys/' . $survey->id);
+        $response = $this->actingAs($this->user)->get('/surveys/'.$survey->id);
 
         $response->assertStatus(200);
         $response->assertSee('Lokasi belum memiliki koordinat.');
@@ -152,7 +152,7 @@ class SurveyCrudTest extends TestCase
             'jumlah_cctv' => 1,
         ]);
 
-        $response = $this->actingAs($this->user)->put('/surveys/' . $survey->id, [
+        $response = $this->actingAs($this->user)->put('/surveys/'.$survey->id, [
             'alamat' => 'Alamat Baru',
             'jumlah_cctv' => 5,
             'keamanan' => '1',
@@ -175,7 +175,7 @@ class SurveyCrudTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $response = $this->actingAs($this->user)->delete('/surveys/' . $survey->id);
+        $response = $this->actingAs($this->user)->delete('/surveys/'.$survey->id);
 
         $response->assertRedirect(route('surveys.index'));
         $this->assertDatabaseMissing('survey_locations', [
@@ -204,7 +204,7 @@ class SurveyCrudTest extends TestCase
             'alamat' => 'Jl. Lambung Mangkurat No. 10',
         ]);
 
-        $response = $this->actingAs($this->user)->get('/surveys/' . $survey->id . '/edit');
+        $response = $this->actingAs($this->user)->get('/surveys/'.$survey->id.'/edit');
 
         $response->assertStatus(200);
         $response->assertSee('Gunakan Lokasi Saya');
@@ -247,5 +247,4 @@ class SurveyCrudTest extends TestCase
             'longitude' => 114.5918234,
         ]);
     }
-
 }
