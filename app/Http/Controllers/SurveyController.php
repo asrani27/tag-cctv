@@ -45,9 +45,14 @@ class SurveyController extends Controller
     /**
      * Display a listing of the surveys with search, filter, and pagination.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
+
+        if ($user->isKelurahan()) {
+            return redirect()->route('usulans.index');
+        }
+
         $filters = $this->getFilters($request);
 
         $query = SurveyLocation::query()
@@ -136,8 +141,12 @@ class SurveyController extends Controller
     /**
      * Show the form for creating a new survey.
      */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
+        if ($request->user()?->isKelurahan()) {
+            return redirect()->route('usulans.index');
+        }
+
         Gate::authorize('create', SurveyLocation::class);
 
         return view('surveys.create', [
@@ -151,6 +160,10 @@ class SurveyController extends Controller
      */
     public function store(SurveyRequest $request): RedirectResponse
     {
+        if ($request->user()?->isKelurahan()) {
+            return redirect()->route('usulans.index');
+        }
+
         Gate::authorize('create', SurveyLocation::class);
 
         $survey = DB::transaction(function () use ($request) {
@@ -218,8 +231,12 @@ class SurveyController extends Controller
     /**
      * Show the form for editing the specified survey.
      */
-    public function edit(SurveyLocation $survey): View
+    public function edit(Request $request, SurveyLocation $survey): View|RedirectResponse
     {
+        if ($request->user()?->isKelurahan()) {
+            return redirect()->route('usulans.index');
+        }
+
         Gate::authorize('update', $survey);
 
         $survey->load('photos');

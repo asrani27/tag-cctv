@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Usulan;
 use App\Models\User;
+use App\Models\Usulan;
 
 class UsulanPolicy
 {
@@ -28,6 +28,13 @@ class UsulanPolicy
             return true;
         }
 
+        if ($user->isKelurahan()) {
+            $kelurahanName = $user->getKelurahanName();
+            if ($kelurahanName && strcasecmp((string) $usulan->kelurahan, $kelurahanName) === 0) {
+                return true;
+            }
+        }
+
         return $usulan->user_id !== null && $usulan->user_id === $user->id;
     }
 
@@ -50,6 +57,13 @@ class UsulanPolicy
 
         if ($user->isSuperAdmin()) {
             return true;
+        }
+
+        if ($user->isKelurahan()) {
+            $kelurahanName = $user->getKelurahanName();
+            if ($kelurahanName && strcasecmp((string) $usulan->kelurahan, $kelurahanName) === 0) {
+                return true;
+            }
         }
 
         return $usulan->user_id !== null && $usulan->user_id === $user->id;

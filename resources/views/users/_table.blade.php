@@ -23,6 +23,8 @@
                     <td class="px-4 py-3.5">
                         @if ($user->isSuperAdmin())
                             <x-badge variant="emerald" size="xs">Superadmin</x-badge>
+                        @elseif ($user->isKelurahan())
+                            <x-badge variant="indigo" size="xs">Kelurahan</x-badge>
                         @else
                             <x-badge variant="slate" size="xs">Surveyor</x-badge>
                         @endif

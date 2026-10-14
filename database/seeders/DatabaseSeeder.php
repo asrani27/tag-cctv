@@ -50,6 +50,9 @@ class DatabaseSeeder extends Seeder
         // Seed Kecamatan & Kelurahan master data
         $this->call(KecamatanSeeder::class);
 
+        // Seed Kelurahan Users
+        $this->call(KelurahanUserSeeder::class);
+
         // Seed sample survey locations if empty
         if (SurveyLocation::count() === 0) {
             SurveyLocation::create([

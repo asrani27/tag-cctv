@@ -46,6 +46,21 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is a kelurahan user.
+     */
+    public function kelurahan(?string $kelurahanName = null): static
+    {
+        $kelurahanName ??= 'Pemurus Dalam';
+        $slug = strtolower(str_replace(' ', '', $kelurahanName));
+
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Kelurahan '.$kelurahanName,
+            'email' => "{$slug}@banjarmasinkota.go.id",
+            'role' => User::ROLE_KELURAHAN,
+        ]);
+    }
+
+    /**
      * Indicate that the user is inactive.
      */
     public function inactive(): static

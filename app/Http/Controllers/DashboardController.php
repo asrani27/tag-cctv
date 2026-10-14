@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SurveyLocation;
 use App\Models\SurveyPhoto;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -13,9 +14,13 @@ class DashboardController extends Controller
     /**
      * Display the application dashboard with role-based statistics.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
+
+        if ($user->isKelurahan()) {
+            return redirect()->route('usulans.index');
+        }
 
         if ($user->isSuperAdmin()) {
             $totalSurvey = SurveyLocation::count();

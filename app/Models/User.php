@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -21,6 +21,8 @@ class User extends Authenticatable
     public const ROLE_SUPERADMIN = 'superadmin';
 
     public const ROLE_USER = 'user';
+
+    public const ROLE_KELURAHAN = 'kelurahan';
 
     /**
      * Get the attributes that should be cast.
@@ -50,6 +52,30 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role === self::ROLE_USER;
+    }
+
+    /**
+     * Determine if the user has kelurahan role.
+     */
+    public function isKelurahan(): bool
+    {
+        return $this->role === self::ROLE_KELURAHAN;
+    }
+
+    /**
+     * Extract kelurahan name if the user is a kelurahan account.
+     */
+    public function getKelurahanName(): ?string
+    {
+        if (! $this->isKelurahan()) {
+            return null;
+        }
+
+        if (str_starts_with($this->name, 'Kelurahan ')) {
+            return trim(substr($this->name, 10));
+        }
+
+        return $this->name;
     }
 
     /**

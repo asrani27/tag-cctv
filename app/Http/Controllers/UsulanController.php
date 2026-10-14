@@ -73,9 +73,26 @@ class UsulanController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         Gate::authorize('create', Usulan::class);
+
+        $user = $request->user();
+        $defaultKelurahan = null;
+        $defaultKecamatan = null;
+
+        if ($user && $user->isKelurahan()) {
+            $defaultKelurahan = $user->getKelurahanName();
+            if ($defaultKelurahan) {
+                try {
+                    $kel = Kelurahan::with('kecamatan')->where('name', $defaultKelurahan)->first();
+                    if ($kel && $kel->kecamatan) {
+                        $defaultKecamatan = $kel->kecamatan->name;
+                    }
+                } catch (\Throwable) {
+                }
+            }
+        }
 
         return view('usulans.create', [
             'kelurahanMap' => SurveyLocation::getKelurahanMap(),
@@ -85,6 +102,8 @@ class UsulanController extends Controller
             'infrastrukturOptions' => Usulan::INFRASTRUKTUR_PENYANGGA_OPTIONS,
             'sumberListrikOptions' => Usulan::SUMBER_LISTRIK_OPTIONS,
             'cctvEksistingOptions' => Usulan::CCTV_EKSISTING_OPTIONS,
+            'defaultKelurahan' => $defaultKelurahan,
+            'defaultKecamatan' => $defaultKecamatan,
         ]);
     }
 

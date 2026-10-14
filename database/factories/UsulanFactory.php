@@ -6,7 +6,7 @@ use App\Models\Usulan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Usulan>
+ * @extends Factory<Usulan>
  */
 class UsulanFactory extends Factory
 {

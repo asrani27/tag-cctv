@@ -21,7 +21,7 @@
                         </svg>
                     </div>
                     <div>
-                        <a href="{{ route('dashboard') }}" class="font-bold text-slate-900 text-sm sm:text-base tracking-tight hover:text-emerald-700">
+                        <a href="{{ auth()->user()?->isKelurahan() ? route('usulans.index') : route('dashboard') }}" class="font-bold text-slate-900 text-sm sm:text-base tracking-tight hover:text-emerald-700">
                             Survey CCTV & WiFi
                         </a>
                         <p class="text-[11px] text-slate-500 hidden sm:block">Kota Banjarmasin</p>
@@ -31,7 +31,7 @@
 
             <!-- Breadcrumb -->
             <nav class="hidden md:flex items-center gap-2 text-xs text-slate-500">
-                <a href="{{ route('dashboard') }}" class="hover:text-slate-800">Admin</a>
+                <a href="{{ auth()->user()?->isKelurahan() ? route('usulans.index') : route('dashboard') }}" class="hover:text-slate-800">{{ auth()->user()?->isKelurahan() ? 'Kelurahan' : 'Admin' }}</a>
                 <span>/</span>
                 <span class="font-medium text-slate-800">@yield('page_title', 'Dashboard')</span>
             </nav>
@@ -64,11 +64,21 @@
                                 <p class="text-xs font-semibold text-slate-800">{{ auth()->user()->name ?? 'Administrator' }}</p>
                                 @if (auth()->user()?->isSuperAdmin())
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-100 text-emerald-800">Superadmin</span>
+                                @elseif (auth()->user()?->isKelurahan())
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-100 text-indigo-800">Kelurahan</span>
                                 @else
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-medium bg-slate-100 text-slate-700">Surveyor</span>
                                 @endif
                             </div>
                             <p class="text-[11px] text-slate-500 truncate">{{ auth()->user()->email ?? '' }}</p>
+                        </div>
+                        <div class="py-1">
+                            <a href="{{ route('profile.edit') }}" class="w-full text-left px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                Profil Saya
+                            </a>
                         </div>
                         @if (auth()->user()?->isSuperAdmin())
                             <div class="py-1">

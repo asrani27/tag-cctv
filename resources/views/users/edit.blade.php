@@ -44,6 +44,7 @@
                         </label>
                         <select name="role" id="role" class="block w-full rounded-lg border border-slate-300 text-sm px-3.5 py-2.5 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60 {{ $user->id === auth()->id() ? 'pointer-events-none opacity-60' : '' }}" required>
                             <option value="user" @selected(old('role', $user->role) === 'user')>Surveyor Lapangan (User)</option>
+                            <option value="kelurahan" @selected(old('role', $user->role) === 'kelurahan')>Kelurahan</option>
                             <option value="superadmin" @selected(old('role', $user->role) === 'superadmin')>Superadmin (Akses Penuh)</option>
                         </select>
                         @error('role')

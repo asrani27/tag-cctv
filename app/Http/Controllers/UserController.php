@@ -52,7 +52,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', Rule::in([User::ROLE_SUPERADMIN, User::ROLE_USER])],
+            'role' => ['required', 'string', Rule::in([User::ROLE_SUPERADMIN, User::ROLE_USER, User::ROLE_KELURAHAN])],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -80,7 +80,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'string', Rule::in([User::ROLE_SUPERADMIN, User::ROLE_USER])],
+            'role' => ['required', 'string', Rule::in([User::ROLE_SUPERADMIN, User::ROLE_USER, User::ROLE_KELURAHAN])],
             'is_active' => ['nullable', 'boolean'],
         ]);
 

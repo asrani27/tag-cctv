@@ -31,6 +31,7 @@
                     <option value="">Semua Role</option>
                     <option value="superadmin" @selected($currentRole === 'superadmin')>Superadmin</option>
                     <option value="user" @selected($currentRole === 'user')>Surveyor (User)</option>
+                    <option value="kelurahan" @selected($currentRole === 'kelurahan')>Kelurahan</option>
                 </select>
             </div>
             <div>

@@ -62,6 +62,7 @@
                         </label>
                         <select name="role" id="role" class="block w-full rounded-lg border border-slate-300 text-sm px-3.5 py-2.5 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60" required>
                             <option value="user" @selected(old('role') === 'user' || !old('role'))>Surveyor Lapangan (User)</option>
+                            <option value="kelurahan" @selected(old('role') === 'kelurahan')>Kelurahan</option>
                             <option value="superadmin" @selected(old('role') === 'superadmin')>Superadmin (Akses Penuh)</option>
                         </select>
                         @error('role')

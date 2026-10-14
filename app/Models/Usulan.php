@@ -146,7 +146,17 @@ class Usulan extends Model
     public function scopeApplyFilters(Builder $query, array $filters, ?User $user = null): Builder
     {
         if ($user && ! $user->isSuperAdmin()) {
-            $query->where('user_id', $user->id);
+            if ($user->isKelurahan()) {
+                $kelurahanName = $user->getKelurahanName();
+                $query->where(function (Builder $q) use ($user, $kelurahanName) {
+                    $q->where('user_id', $user->id);
+                    if ($kelurahanName) {
+                        $q->orWhere('kelurahan', $kelurahanName);
+                    }
+                });
+            } else {
+                $query->where('user_id', $user->id);
+            }
         } elseif (! empty($filters['user_id'])) {
             if ($filters['user_id'] === 'legacy') {
                 $query->whereNull('user_id');

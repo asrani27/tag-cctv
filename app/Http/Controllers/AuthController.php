@@ -16,7 +16,9 @@ class AuthController extends Controller
     public function showLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return Auth::user()->isKelurahan()
+                ? redirect()->route('usulans.index')
+                : redirect()->route('dashboard');
         }
 
         return view('auth.login');
@@ -47,7 +49,11 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->intended(route('dashboard'));
+            $targetRoute = $user->isKelurahan()
+                ? route('usulans.index')
+                : route('dashboard');
+
+            return redirect()->intended($targetRoute);
         }
 
         return back()

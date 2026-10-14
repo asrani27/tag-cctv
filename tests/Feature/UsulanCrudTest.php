@@ -176,6 +176,42 @@ class UsulanCrudTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_user_can_view_own_usulan_detail_with_map(): void
+    {
+        $usulan = Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+            'nama_lokasi' => 'Gang',
+            'rt' => '12',
+            'kelurahan' => 'Kertak Baru Ilir',
+            'latitude' => -3.3194,
+            'longitude' => 114.5908,
+            'nama_ketua_rt' => 'Pak Haji Amir',
+            'no_hp' => '081298765432',
+        ]);
+
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.show', $usulan));
+
+        $response->assertStatus(200);
+        $response->assertSee('Detail Usulan Titik CCTV');
+        $response->assertSee('Pak Haji Amir');
+        $response->assertSee('081298765432');
+        $response->assertSee('id="mini-map"', false);
+    }
+
+    public function test_user_can_delete_own_usulan(): void
+    {
+        $usulan = Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+        ]);
+
+        $response = $this->actingAs($this->surveyorA)->delete(route('usulans.destroy', $usulan));
+
+        $response->assertRedirect(route('usulans.index'));
+        $this->assertDatabaseMissing('usulans', [
+            'id' => $usulan->id,
+        ]);
+    }
+
     public function test_superadmin_can_update_and_change_status(): void
     {
         $usulan = Usulan::factory()->create([

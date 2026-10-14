@@ -82,7 +82,7 @@
                     name="kelurahan"
                     id="kelurahan"
                     label="Kelurahan"
-                    :value="$usulan->kelurahan ?? null"
+                    :value="$usulan->kelurahan ?? $defaultKelurahan ?? null"
                     placeholder="Pilih atau ketik kelurahan..."
                     list="kelurahan-suggestions"
                     required
@@ -131,7 +131,7 @@
                     name="kecamatan"
                     id="kecamatan"
                     label="Kecamatan"
-                    :value="$usulan->kecamatan ?? null"
+                    :value="$usulan->kecamatan ?? $defaultKecamatan ?? null"
                     :options="$kecamatanList ?? []"
                     placeholder="-- Pilih / Otomatis dari Kelurahan --"
                 />

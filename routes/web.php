@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\KelurahanController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyPhotoController;
@@ -43,6 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile Management
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Survey Photos Chunk Upload & Management
     Route::get('surveys/photos/chunk-status', [SurveyPhotoController::class, 'chunkStatus'])->name('surveys.photos.chunk-status');
