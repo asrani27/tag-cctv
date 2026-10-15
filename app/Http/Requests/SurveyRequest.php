@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SurveyLocation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -20,7 +21,7 @@ class SurveyRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        $merges = [
             'keamanan' => $this->boolean('keamanan'),
             'akses_wifi' => $this->boolean('akses_wifi'),
             'lalin' => $this->boolean('lalin'),
@@ -28,7 +29,13 @@ class SurveyRequest extends FormRequest
             'tersedia_fiber_optik' => $this->boolean('tersedia_fiber_optik'),
             'tersedia_4g_5g' => $this->boolean('tersedia_4g_5g'),
             'tersedia_link_p2p' => $this->boolean('tersedia_link_p2p'),
-        ]);
+        ];
+
+        if ($this->has('kelurahan') && is_string($this->input('kelurahan'))) {
+            $merges['kelurahan'] = SurveyLocation::normalizeKelurahanName($this->input('kelurahan'));
+        }
+
+        $this->merge($merges);
     }
 
     /**

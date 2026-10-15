@@ -17,6 +17,12 @@ class SurveyLocation extends Model
      */
     protected static function booted(): void
     {
+        static::saving(function (SurveyLocation $survey) {
+            if (! empty($survey->kelurahan)) {
+                $survey->kelurahan = self::normalizeKelurahanName($survey->kelurahan);
+            }
+        });
+
         static::deleting(function (SurveyLocation $survey) {
             foreach ($survey->photos as $photo) {
                 $photo->delete();
@@ -108,6 +114,18 @@ class SurveyLocation extends Model
             'Sungai Miai',
             'Surgi Mufti',
         ],
+    ];
+
+    /**
+     * Map of common typos and aliases to canonical Kelurahan names.
+     */
+    public const KELURAHAN_ALIASES = [
+        'benua anyar' => 'Banua Anyar',
+        'kelurahan benua anyar' => 'Banua Anyar',
+        'pekapuran' => 'Pekapuran Laut',
+        'kelurahan pekapuran' => 'Pekapuran Laut',
+        'alalak tengh' => 'Alalak Tengah',
+        'kelurahan alalak tengh' => 'Alalak Tengah',
     ];
 
     /**
@@ -355,6 +373,63 @@ class SurveyLocation extends Model
         }
 
         return self::KELURAHAN_BY_KECAMATAN[$kecamatanName] ?? [];
+    }
+
+    /**
+     * Get a lookup map of lowercase name => canonical name for all 52 kelurahans.
+     *
+     * @return array<string, string>
+     */
+    public static function getCanonicalKelurahanNameMap(): array
+    {
+        static $map = null;
+        if ($map !== null) {
+            return $map;
+        }
+
+        $allNames = [];
+        foreach (self::KELURAHAN_BY_KECAMATAN as $list) {
+            foreach ($list as $name) {
+                $allNames[strtolower($name)] = $name;
+            }
+        }
+
+        return $map = $allNames;
+    }
+
+    /**
+     * Normalize a kelurahan name to its canonical form if it matches known Banjarmasin kelurahan.
+     */
+    public static function normalizeKelurahanName(?string $name): ?string
+    {
+        if ($name === null) {
+            return null;
+        }
+
+        $trimmed = trim($name);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        $lower = strtolower($trimmed);
+        if (isset(self::KELURAHAN_ALIASES[$lower])) {
+            return self::KELURAHAN_ALIASES[$lower];
+        }
+
+        // Strip "Kelurahan " or "kelurahan " prefix if present
+        $stripped = trim((string) preg_replace('/^kelurahan\s+/i', '', $trimmed));
+        $strippedLower = strtolower($stripped);
+
+        if (isset(self::KELURAHAN_ALIASES[$strippedLower])) {
+            return self::KELURAHAN_ALIASES[$strippedLower];
+        }
+
+        $canonicalMap = self::getCanonicalKelurahanNameMap();
+        if (isset($canonicalMap[$strippedLower])) {
+            return $canonicalMap[$strippedLower];
+        }
+
+        return $stripped;
     }
 
     /**
