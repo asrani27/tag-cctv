@@ -173,6 +173,36 @@ class KelurahanUserTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Pemurus Dalam');
         $response->assertSee('Banjarmasin Selatan');
+
+        $responseWifi = $this->actingAs($kelurahanUser)->get(route('usulans.create', ['jenis' => 'wifi']));
+        $responseWifi->assertStatus(200);
+        $responseWifi->assertSee('Pemurus Dalam');
+        $responseWifi->assertSee('Tambah Data Usulan Titik Wifi');
+    }
+
+    public function test_kelurahan_user_sees_wifi_usulan_tab_isolated(): void
+    {
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->create();
+        $otherUser = User::factory()->create();
+
+        // Wifi usulan in Pemurus Dalam
+        Usulan::factory()->wifi()->create([
+            'user_id' => $otherUser->id,
+            'kelurahan' => 'Pemurus Dalam',
+            'nama_fasilitas_publik' => 'Balai RT Pemurus',
+        ]);
+
+        // Wifi usulan in Melayu
+        Usulan::factory()->wifi()->create([
+            'user_id' => $otherUser->id,
+            'kelurahan' => 'Melayu',
+            'nama_fasilitas_publik' => 'Taman Warga Melayu',
+        ]);
+
+        $response = $this->actingAs($kelurahanUser)->get(route('usulans.index', ['tab' => 'wifi']));
+        $response->assertStatus(200);
+        $response->assertSee('Balai RT Pemurus');
+        $response->assertDontSee('Taman Warga Melayu');
     }
 
     public function test_superadmin_can_manage_kelurahan_role_users(): void

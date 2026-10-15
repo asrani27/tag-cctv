@@ -268,4 +268,133 @@ class UsulanCrudTest extends TestCase
         $response->assertSee('Haji Mansyur RT05');
         $response->assertDontSee('Pak Joko RT02');
     }
+
+    public function test_tab_navigation_renders_cctv_and_wifi_counts(): void
+    {
+        Usulan::factory()->create([
+            'user_id' => $this->surveyorA->id,
+            'jenis' => Usulan::JENIS_CCTV,
+            'nama_ketua_rt' => 'Ketua RT CCTV',
+        ]);
+        Usulan::factory()->wifi()->create([
+            'user_id' => $this->surveyorA->id,
+            'nama_ketua_rt' => 'Ketua RT Wifi',
+            'nama_fasilitas_publik' => 'Pos Kamling',
+        ]);
+
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Usulan Titik CCTV');
+        $response->assertSee('Usulan Titik Wifi');
+        $response->assertSee('Ketua RT CCTV');
+        $response->assertDontSee('Ketua RT Wifi');
+
+        $responseWifi = $this->actingAs($this->surveyorA)->get(route('usulans.index', ['tab' => 'wifi']));
+        $responseWifi->assertStatus(200);
+        $responseWifi->assertSee('Ketua RT Wifi');
+        $responseWifi->assertSee('Pos Kamling');
+        $responseWifi->assertDontSee('Ketua RT CCTV');
+    }
+
+    public function test_create_wifi_usulan_view_and_store(): void
+    {
+        $response = $this->actingAs($this->surveyorA)->get(route('usulans.create', ['jenis' => 'wifi']));
+        $response->assertStatus(200);
+        $response->assertSee('Tambah Data Usulan Titik Wifi');
+        $response->assertSee('Nama Fasilitas Publik Lokasi Pemasangan');
+        $response->assertSee('Perkiraan Jumlah Pengguna Potensial');
+        $response->assertSee('Akses Jaringan Kabel/Tiang Terdekat');
+        $response->assertSee('Tempat Pemasangan Perangkat Router/AP');
+        $response->assertSee('Ketersediaan Listrik 24 Jam');
+
+        $payload = [
+            'jenis' => Usulan::JENIS_WIFI,
+            'latitude' => -3.3214567,
+            'longitude' => 114.5934567,
+            'kelurahan' => 'Kertak Baru Ilir',
+            'rt' => '03',
+            'nama_ketua_rt' => 'Pak Usman',
+            'no_hp' => '081233445566',
+            'nama_fasilitas_publik' => 'Balai RT',
+            'jumlah_pengguna_potensial' => 60,
+            'akses_jaringan_terdekat' => 'Tiang Telkom 10 meter',
+            'tempat_pemasangan' => 'Indoor',
+            'ketersediaan_listrik' => 'Tersedia',
+            'keterangan' => 'Kebutuhan wifi warga balai pertemuan RT.',
+        ];
+
+        $postResponse = $this->actingAs($this->surveyorA)->post(route('usulans.store'), $payload);
+        $postResponse->assertRedirect(route('usulans.index', ['tab' => 'wifi']));
+        $postResponse->assertSessionHas('success');
+
+        $this->assertDatabaseHas('usulans', [
+            'user_id' => $this->surveyorA->id,
+            'jenis' => Usulan::JENIS_WIFI,
+            'nama_fasilitas_publik' => 'Balai RT',
+            'tempat_pemasangan' => 'Indoor',
+            'ketersediaan_listrik' => 'Tersedia',
+            'rt' => '03',
+        ]);
+    }
+
+    public function test_wifi_usulan_validation_rules(): void
+    {
+        $response = $this->actingAs($this->surveyorA)->post(route('usulans.store'), [
+            'jenis' => Usulan::JENIS_WIFI,
+            'latitude' => -3.32,
+            'longitude' => 114.59,
+            'kelurahan' => 'Melayu',
+            'rt' => '01',
+        ]);
+
+        $response->assertSessionHasErrors([
+            'nama_fasilitas_publik',
+            'tempat_pemasangan',
+            'ketersediaan_listrik',
+        ]);
+    }
+
+    public function test_view_and_update_wifi_usulan(): void
+    {
+        $wifiUsulan = Usulan::factory()->wifi()->create([
+            'user_id' => $this->surveyorA->id,
+            'nama_fasilitas_publik' => 'Posyandu',
+            'tempat_pemasangan' => 'Outdoor Terlindung',
+            'ketersediaan_listrik' => 'Perlu Tarikan Baru',
+        ]);
+
+        // Detail
+        $detailResponse = $this->actingAs($this->surveyorA)->get(route('usulans.show', $wifiUsulan));
+        $detailResponse->assertStatus(200);
+        $detailResponse->assertSee('Detail Usulan Titik Wifi');
+        $detailResponse->assertSee('Posyandu');
+        $detailResponse->assertSee('Outdoor Terlindung');
+        $detailResponse->assertSee('Perlu Tarikan Baru');
+
+        // Edit view
+        $editResponse = $this->actingAs($this->surveyorA)->get(route('usulans.edit', $wifiUsulan));
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee('Edit Data Usulan Titik Wifi');
+
+        // Update
+        $updateResponse = $this->actingAs($this->surveyorA)->put(route('usulans.update', $wifiUsulan), [
+            'jenis' => Usulan::JENIS_WIFI,
+            'latitude' => $wifiUsulan->latitude,
+            'longitude' => $wifiUsulan->longitude,
+            'kelurahan' => $wifiUsulan->kelurahan,
+            'rt' => $wifiUsulan->rt,
+            'nama_fasilitas_publik' => 'Taman Warga',
+            'tempat_pemasangan' => 'Indoor',
+            'ketersediaan_listrik' => 'Tersedia',
+            'jumlah_pengguna_potensial' => 120,
+        ]);
+
+        $updateResponse->assertRedirect(route('usulans.show', $wifiUsulan));
+        $this->assertDatabaseHas('usulans', [
+            'id' => $wifiUsulan->id,
+            'nama_fasilitas_publik' => 'Taman Warga',
+            'tempat_pemasangan' => 'Indoor',
+            'ketersediaan_listrik' => 'Tersedia',
+        ]);
+    }
 }

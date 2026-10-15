@@ -5,11 +5,19 @@
                 <th class="px-4 py-3 text-center w-12">ID</th>
                 <th class="px-4 py-3">Kelurahan / RT</th>
                 <th class="px-4 py-3">Ketua RT & HP</th>
-                <th class="px-4 py-3">Titik Usulan</th>
-                <th class="px-4 py-3">Kategori</th>
-                <th class="px-4 py-3">Penyangga</th>
-                <th class="px-3 py-3 text-center">Listrik</th>
-                <th class="px-3 py-3 text-center">CCTV</th>
+                @if ($activeTab === \App\Models\Usulan::JENIS_WIFI)
+                    <th class="px-4 py-3">Fasilitas Publik</th>
+                    <th class="px-4 py-3">Pengguna / Hari</th>
+                    <th class="px-4 py-3">Jaringan Kabel/Tiang</th>
+                    <th class="px-4 py-3">Tempat Router/AP</th>
+                    <th class="px-3 py-3 text-center">Listrik 24 Jam</th>
+                @else
+                    <th class="px-4 py-3">Titik Usulan</th>
+                    <th class="px-4 py-3">Kategori</th>
+                    <th class="px-4 py-3">Penyangga</th>
+                    <th class="px-3 py-3 text-center">Listrik</th>
+                    <th class="px-3 py-3 text-center">CCTV</th>
+                @endif
                 <th class="px-3 py-3 text-center">Peta</th>
                 @if ($isSuperAdmin)
                     <th class="px-4 py-3">Pengusul</th>
@@ -31,33 +39,63 @@
                             <div class="text-[11px] font-mono text-emerald-700">{{ $usulan->no_hp }}</div>
                         @endif
                     </td>
-                    <td class="px-4 py-3.5">
-                        @if ($usulan->nama_lokasi)
-                            <x-badge variant="emerald" size="xs">{{ $usulan->nama_lokasi }}</x-badge>
-                        @else
-                            <span class="text-slate-400">-</span>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3.5">
-                        @if ($usulan->kategori_titik)
-                            <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                {{ $usulan->kategori_titik }}
+                    @if ($activeTab === \App\Models\Usulan::JENIS_WIFI)
+                        <td class="px-4 py-3.5">
+                            @if ($usulan->nama_fasilitas_publik)
+                                <x-badge variant="sky" size="xs">{{ $usulan->nama_fasilitas_publik }}</x-badge>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3.5 font-medium text-slate-700">
+                            {{ $usulan->jumlah_pengguna_potensial ? $usulan->jumlah_pengguna_potensial . ' Warga' : '-' }}
+                        </td>
+                        <td class="px-4 py-3.5 text-slate-600 truncate max-w-[180px]" title="{{ $usulan->akses_jaringan_terdekat }}">
+                            {{ $usulan->akses_jaringan_terdekat ?? '-' }}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            @if ($usulan->tempat_pemasangan)
+                                <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                                    {{ $usulan->tempat_pemasangan }}
+                                </span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-3 py-3.5 text-center">
+                            <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $usulan->ketersediaan_listrik === 'Tersedia' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                                {{ $usulan->ketersediaan_listrik ?? '-' }}
                             </span>
-                        @else
-                            <span class="text-slate-400">-</span>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3.5 text-slate-700">{{ $usulan->infrastruktur_penyangga ?? '-' }}</td>
-                    <td class="px-3 py-3.5 text-center">
-                        <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $usulan->sumber_daya_listrik === 'Ada' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
-                            {{ $usulan->sumber_daya_listrik ?? '-' }}
-                        </span>
-                    </td>
-                    <td class="px-3 py-3.5 text-center">
-                        <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $usulan->cctv_eksisting === 'Sudah Ada' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' }}">
-                            {{ $usulan->cctv_eksisting ?? '-' }}
-                        </span>
-                    </td>
+                        </td>
+                    @else
+                        <td class="px-4 py-3.5">
+                            @if ($usulan->nama_lokasi)
+                                <x-badge variant="emerald" size="xs">{{ $usulan->nama_lokasi }}</x-badge>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3.5">
+                            @if ($usulan->kategori_titik)
+                                <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                    {{ $usulan->kategori_titik }}
+                                </span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3.5 text-slate-700">{{ $usulan->infrastruktur_penyangga ?? '-' }}</td>
+                        <td class="px-3 py-3.5 text-center">
+                            <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $usulan->sumber_daya_listrik === 'Ada' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
+                                {{ $usulan->sumber_daya_listrik ?? '-' }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3.5 text-center">
+                            <span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $usulan->cctv_eksisting === 'Sudah Ada' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' }}">
+                                {{ $usulan->cctv_eksisting ?? '-' }}
+                            </span>
+                        </td>
+                    @endif
                     <td class="px-3 py-3.5 text-center">
                         @if ($usulan->hasCoordinates())
                             <span class="text-emerald-700 font-semibold text-xs">📍 Ya</span>

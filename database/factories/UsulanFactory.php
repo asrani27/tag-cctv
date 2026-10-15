@@ -19,6 +19,7 @@ class UsulanFactory extends Factory
     {
         return [
             'user_id' => null,
+            'jenis' => Usulan::JENIS_CCTV,
             'latitude' => fake()->latitude(-3.36, -3.28),
             'longitude' => fake()->longitude(114.56, 114.64),
             'kelurahan' => fake()->randomElement(['Kertak Baru Ilir', 'Sungai Miai', 'Teluk Tiram', 'Kuripan', 'Pemurus Baru']),
@@ -34,5 +35,25 @@ class UsulanFactory extends Factory
             'keterangan' => fake()->sentence(),
             'status' => 'Diajukan',
         ];
+    }
+
+    /**
+     * Indicate that the usulan is for Wifi.
+     */
+    public function wifi(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'jenis' => Usulan::JENIS_WIFI,
+            'nama_lokasi' => null,
+            'kategori_titik' => null,
+            'infrastruktur_penyangga' => null,
+            'sumber_daya_listrik' => null,
+            'cctv_eksisting' => null,
+            'nama_fasilitas_publik' => fake()->randomElement(Usulan::FASILITAS_PUBLIK_OPTIONS),
+            'jumlah_pengguna_potensial' => (string) fake()->numberBetween(20, 200),
+            'akses_jaringan_terdekat' => 'Tiang Telkom '.fake()->numberBetween(5, 50).' meter',
+            'tempat_pemasangan' => fake()->randomElement(Usulan::TEMPAT_PEMASANGAN_OPTIONS),
+            'ketersediaan_listrik' => fake()->randomElement(Usulan::KETERSEDIAAN_LISTRIK_OPTIONS),
+        ]);
     }
 }

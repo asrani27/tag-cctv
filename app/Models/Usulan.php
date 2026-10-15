@@ -21,7 +21,14 @@ class Usulan extends Model
     protected $table = 'usulans';
 
     /**
-     * Pilihan opsi untuk Nama Lokasi / Titik Usulan.
+     * Jenis Usulan
+     */
+    public const JENIS_CCTV = 'cctv';
+
+    public const JENIS_WIFI = 'wifi';
+
+    /**
+     * Pilihan opsi untuk Nama Lokasi / Titik Usulan (CCTV).
      *
      * @var list<string>
      */
@@ -32,7 +39,7 @@ class Usulan extends Model
     ];
 
     /**
-     * Pilihan opsi untuk Kategori Titik.
+     * Pilihan opsi untuk Kategori Titik (CCTV).
      *
      * @var list<string>
      */
@@ -44,7 +51,7 @@ class Usulan extends Model
     ];
 
     /**
-     * Pilihan opsi untuk Infrastruktur Penyangga.
+     * Pilihan opsi untuk Infrastruktur Penyangga (CCTV).
      *
      * @var list<string>
      */
@@ -56,7 +63,7 @@ class Usulan extends Model
     ];
 
     /**
-     * Pilihan opsi untuk Sumber Daya Listrik.
+     * Pilihan opsi untuk Sumber Daya Listrik (CCTV).
      *
      * @var list<string>
      */
@@ -66,13 +73,45 @@ class Usulan extends Model
     ];
 
     /**
-     * Pilihan opsi untuk Ketersediaan CCTV Eksisting.
+     * Pilihan opsi untuk Ketersediaan CCTV Eksisting (CCTV).
      *
      * @var list<string>
      */
     public const CCTV_EKSISTING_OPTIONS = [
         'Sudah Ada',
         'Belum',
+    ];
+
+    /**
+     * Pilihan opsi untuk Nama Fasilitas Publik Lokasi Pemasangan (Wifi).
+     *
+     * @var list<string>
+     */
+    public const FASILITAS_PUBLIK_OPTIONS = [
+        'Pos Kamling',
+        'Balai RT',
+        'Taman Warga',
+        'Posyandu',
+    ];
+
+    /**
+     * Pilihan opsi untuk Tempat Pemasangan Perangkat Router/AP (Wifi).
+     *
+     * @var list<string>
+     */
+    public const TEMPAT_PEMASANGAN_OPTIONS = [
+        'Indoor',
+        'Outdoor Terlindung',
+    ];
+
+    /**
+     * Pilihan opsi untuk Ketersediaan Listrik 24 Jam (Wifi).
+     *
+     * @var list<string>
+     */
+    public const KETERSEDIAAN_LISTRIK_OPTIONS = [
+        'Tersedia',
+        'Perlu Tarikan Baru',
     ];
 
     /**
@@ -93,6 +132,7 @@ class Usulan extends Model
      */
     protected $fillable = [
         'user_id',
+        'jenis',
         'latitude',
         'longitude',
         'kelurahan',
@@ -105,6 +145,11 @@ class Usulan extends Model
         'infrastruktur_penyangga',
         'sumber_daya_listrik',
         'cctv_eksisting',
+        'nama_fasilitas_publik',
+        'jumlah_pengguna_potensial',
+        'akses_jaringan_terdekat',
+        'tempat_pemasangan',
+        'ketersediaan_listrik',
         'keterangan',
         'status',
     ];
@@ -120,6 +165,22 @@ class Usulan extends Model
             'latitude' => 'float',
             'longitude' => 'float',
         ];
+    }
+
+    /**
+     * Check if this usulan is for CCTV.
+     */
+    public function isCctv(): bool
+    {
+        return ($this->jenis ?? self::JENIS_CCTV) === self::JENIS_CCTV;
+    }
+
+    /**
+     * Check if this usulan is for Wifi.
+     */
+    public function isWifi(): bool
+    {
+        return $this->jenis === self::JENIS_WIFI;
     }
 
     /**
@@ -175,8 +236,26 @@ class Usulan extends Model
                     ->orWhere('nama_lokasi', 'like', $search)
                     ->orWhere('kategori_titik', 'like', $search)
                     ->orWhere('infrastruktur_penyangga', 'like', $search)
+                    ->orWhere('nama_fasilitas_publik', 'like', $search)
+                    ->orWhere('akses_jaringan_terdekat', 'like', $search)
+                    ->orWhere('tempat_pemasangan', 'like', $search)
+                    ->orWhere('ketersediaan_listrik', 'like', $search)
                     ->orWhere('keterangan', 'like', $search);
             });
+        }
+
+        if (! empty($filters['jenis'])) {
+            if ($filters['jenis'] === self::JENIS_CCTV) {
+                $query->where(function (Builder $q) {
+                    $q->where('jenis', self::JENIS_CCTV)->orWhereNull('jenis');
+                });
+            } else {
+                $query->where('jenis', $filters['jenis']);
+            }
+        }
+
+        if (! empty($filters['nama_fasilitas_publik'])) {
+            $query->where('nama_fasilitas_publik', $filters['nama_fasilitas_publik']);
         }
 
         if (! empty($filters['kelurahan'])) {

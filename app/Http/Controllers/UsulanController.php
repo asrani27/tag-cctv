@@ -21,11 +21,19 @@ class UsulanController extends Controller
             $search = $request->input('q', '');
         }
 
+        $tab = $request->input('tab', Usulan::JENIS_CCTV);
+        if (! in_array($tab, [Usulan::JENIS_CCTV, Usulan::JENIS_WIFI], true)) {
+            $tab = Usulan::JENIS_CCTV;
+        }
+
         return [
+            'tab' => $tab,
+            'jenis' => $tab,
             'search' => (string) $search,
             'kelurahan' => (string) $request->input('kelurahan', ''),
             'kategori_titik' => (string) $request->input('kategori_titik', ''),
             'nama_lokasi' => (string) $request->input('nama_lokasi', ''),
+            'nama_fasilitas_publik' => (string) $request->input('nama_fasilitas_publik', ''),
             'status' => (string) $request->input('status', ''),
             'user_id' => (string) $request->input('user_id', ''),
         ];
@@ -35,6 +43,14 @@ class UsulanController extends Controller
     {
         $user = $request->user();
         $filters = $this->getFilters($request);
+
+        $countCctv = Usulan::query()
+            ->applyFilters(['jenis' => Usulan::JENIS_CCTV], $user)
+            ->count();
+
+        $countWifi = Usulan::query()
+            ->applyFilters(['jenis' => Usulan::JENIS_WIFI], $user)
+            ->count();
 
         $query = Usulan::query()
             ->with(['user', 'kelurahanModel'])
@@ -58,15 +74,22 @@ class UsulanController extends Controller
 
         return view('usulans.index', [
             'usulans' => $usulans,
+            'activeTab' => $filters['tab'],
+            'countCctv' => $countCctv,
+            'countWifi' => $countWifi,
             'kelurahanOptions' => $kelurahanOptions,
             'userOptions' => $userOptions,
             'kategoriOptions' => Usulan::KATEGORI_TITIK_OPTIONS,
             'namaLokasiOptions' => Usulan::NAMA_LOKASI_OPTIONS,
+            'fasilitasPublikOptions' => Usulan::FASILITAS_PUBLIK_OPTIONS,
+            'tempatPemasanganOptions' => Usulan::TEMPAT_PEMASANGAN_OPTIONS,
+            'ketersediaanListrikOptions' => Usulan::KETERSEDIAAN_LISTRIK_OPTIONS,
             'statusOptions' => Usulan::STATUS_OPTIONS,
             'currentSearch' => $filters['search'],
             'currentKelurahan' => $filters['kelurahan'],
             'currentKategori' => $filters['kategori_titik'],
             'currentNamaLokasi' => $filters['nama_lokasi'],
+            'currentFasilitasPublik' => $filters['nama_fasilitas_publik'],
             'currentStatus' => $filters['status'],
             'currentUserId' => $filters['user_id'],
             'isSuperAdmin' => $user->isSuperAdmin(),
@@ -80,6 +103,11 @@ class UsulanController extends Controller
         $user = $request->user();
         $defaultKelurahan = null;
         $defaultKecamatan = null;
+
+        $currentJenis = $request->input('jenis', Usulan::JENIS_CCTV);
+        if (! in_array($currentJenis, [Usulan::JENIS_CCTV, Usulan::JENIS_WIFI], true)) {
+            $currentJenis = Usulan::JENIS_CCTV;
+        }
 
         if ($user && $user->isKelurahan()) {
             $defaultKelurahan = $user->getKelurahanName();
@@ -95,6 +123,7 @@ class UsulanController extends Controller
         }
 
         return view('usulans.create', [
+            'currentJenis' => $currentJenis,
             'kelurahanMap' => SurveyLocation::getKelurahanMap(),
             'kecamatanList' => SurveyLocation::getKecamatanList(),
             'namaLokasiOptions' => Usulan::NAMA_LOKASI_OPTIONS,
@@ -102,6 +131,9 @@ class UsulanController extends Controller
             'infrastrukturOptions' => Usulan::INFRASTRUKTUR_PENYANGGA_OPTIONS,
             'sumberListrikOptions' => Usulan::SUMBER_LISTRIK_OPTIONS,
             'cctvEksistingOptions' => Usulan::CCTV_EKSISTING_OPTIONS,
+            'fasilitasPublikOptions' => Usulan::FASILITAS_PUBLIK_OPTIONS,
+            'tempatPemasanganOptions' => Usulan::TEMPAT_PEMASANGAN_OPTIONS,
+            'ketersediaanListrikOptions' => Usulan::KETERSEDIAAN_LISTRIK_OPTIONS,
             'defaultKelurahan' => $defaultKelurahan,
             'defaultKecamatan' => $defaultKecamatan,
         ]);
@@ -114,6 +146,14 @@ class UsulanController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
+        if (empty($data['jenis'])) {
+            $data['jenis'] = Usulan::JENIS_CCTV;
+        }
+
+        if (! $request->user()->isSuperAdmin()) {
+            $data['status'] = 'Diajukan';
+        }
+
         if (! empty($data['kelurahan']) && empty($data['kecamatan'])) {
             try {
                 $kel = Kelurahan::with('kecamatan')->where('name', $data['kelurahan'])->first();
@@ -124,9 +164,16 @@ class UsulanController extends Controller
             }
         }
 
-        Usulan::create($data);
+        $usulan = Usulan::create($data);
 
-        return redirect()->route('usulans.index')->with('success', 'Data usulan titik baru berhasil ditambahkan.');
+        $label = $usulan->isWifi() ? 'titik Wifi' : 'titik CCTV';
+
+        $redirectRoute = $usulan->isWifi()
+            ? route('usulans.index', ['tab' => Usulan::JENIS_WIFI])
+            : route('usulans.index');
+
+        return redirect()->to($redirectRoute)
+            ->with('success', "Data usulan {$label} baru berhasil ditambahkan.");
     }
 
     public function show(Usulan $usulan): View
@@ -141,8 +188,11 @@ class UsulanController extends Controller
     {
         Gate::authorize('update', $usulan);
 
+        $currentJenis = $usulan->jenis ?: Usulan::JENIS_CCTV;
+
         return view('usulans.edit', [
             'usulan' => $usulan,
+            'currentJenis' => $currentJenis,
             'kelurahanMap' => SurveyLocation::getKelurahanMap(),
             'kecamatanList' => SurveyLocation::getKecamatanList(),
             'namaLokasiOptions' => Usulan::NAMA_LOKASI_OPTIONS,
@@ -150,6 +200,9 @@ class UsulanController extends Controller
             'infrastrukturOptions' => Usulan::INFRASTRUKTUR_PENYANGGA_OPTIONS,
             'sumberListrikOptions' => Usulan::SUMBER_LISTRIK_OPTIONS,
             'cctvEksistingOptions' => Usulan::CCTV_EKSISTING_OPTIONS,
+            'fasilitasPublikOptions' => Usulan::FASILITAS_PUBLIK_OPTIONS,
+            'tempatPemasanganOptions' => Usulan::TEMPAT_PEMASANGAN_OPTIONS,
+            'ketersediaanListrikOptions' => Usulan::KETERSEDIAAN_LISTRIK_OPTIONS,
             'statusOptions' => Usulan::STATUS_OPTIONS,
         ]);
     }
@@ -159,6 +212,10 @@ class UsulanController extends Controller
         Gate::authorize('update', $usulan);
 
         $data = $request->validated();
+        if (! $request->user()->isSuperAdmin()) {
+            unset($data['status']);
+        }
+
         if (! empty($data['kelurahan']) && empty($data['kecamatan'])) {
             try {
                 $kel = Kelurahan::with('kecamatan')->where('name', $data['kelurahan'])->first();
@@ -177,8 +234,13 @@ class UsulanController extends Controller
     public function destroy(Usulan $usulan): RedirectResponse
     {
         Gate::authorize('delete', $usulan);
+        $isWifi = $usulan->isWifi();
         $usulan->delete();
 
-        return redirect()->route('usulans.index')->with('success', 'Data usulan berhasil dihapus.');
+        $redirectRoute = $isWifi
+            ? route('usulans.index', ['tab' => Usulan::JENIS_WIFI])
+            : route('usulans.index');
+
+        return redirect()->to($redirectRoute)->with('success', 'Data usulan berhasil dihapus.');
     }
 }
