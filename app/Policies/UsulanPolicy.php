@@ -16,6 +16,14 @@ class UsulanPolicy
     }
 
     /**
+     * Determine whether the user can export usulans to Excel.
+     */
+    public function export(User $user): bool
+    {
+        return $user->isActive();
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Usulan $usulan): bool

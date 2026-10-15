@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\UsulanExport;
 use App\Http\Requests\UsulanRequest;
 use App\Models\Kelurahan;
 use App\Models\SurveyLocation;
@@ -10,7 +11,10 @@ use App\Models\Usulan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UsulanController extends Controller
 {
@@ -94,6 +98,57 @@ class UsulanController extends Controller
             'currentUserId' => $filters['user_id'],
             'isSuperAdmin' => $user->isSuperAdmin(),
         ]);
+    }
+
+    /**
+     * Export usulan data to Excel.
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        Gate::authorize('export', Usulan::class);
+
+        $request->validate([
+            'tab' => ['nullable', 'string', 'in:cctv,wifi,all'],
+            'search' => ['nullable', 'string', 'max:255'],
+            'q' => ['nullable', 'string', 'max:255'],
+            'kelurahan' => ['nullable', 'string', 'max:255'],
+            'kategori_titik' => ['nullable', 'string', 'max:255'],
+            'nama_lokasi' => ['nullable', 'string', 'max:255'],
+            'nama_fasilitas_publik' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', 'max:50'],
+            'user_id' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $filters = $this->getFilters($request);
+        if ($request->input('tab') === 'all') {
+            $filters['tab'] = 'all';
+            $filters['jenis'] = '';
+        }
+
+        $user = $request->user();
+
+        // Build an informative & sanitized filename
+        $parts = ['usulan'];
+        if ($filters['tab'] === Usulan::JENIS_WIFI) {
+            $parts[] = 'wifi';
+        } elseif ($filters['tab'] === 'all') {
+            $parts[] = 'cctv-wifi';
+        } else {
+            $parts[] = 'cctv';
+        }
+
+        if (! empty($filters['kelurahan'])) {
+            $parts[] = Str::slug($filters['kelurahan']);
+        }
+
+        if (! empty($filters['status'])) {
+            $parts[] = Str::slug($filters['status']);
+        }
+
+        $parts[] = now()->format('Y-m-d');
+        $filename = implode('-', $parts).'.xlsx';
+
+        return Excel::download(new UsulanExport($filters, $user), $filename);
     }
 
     public function create(Request $request): View

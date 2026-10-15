@@ -19,6 +19,64 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Tambah Usulan {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }}
             </x-button>
+
+            @can('export', \App\Models\Usulan::class)
+            <div class="relative inline-flex" x-data="{ exportMenuOpen: false }">
+                <a
+                    href="{{ route('usulans.export', array_merge(request()->query(), ['tab' => $activeTab])) }}"
+                    id="btn-export-excel"
+                    class="inline-flex items-center justify-center font-medium rounded-l-lg transition-all focus:outline-hidden focus:ring-2 focus:ring-offset-1 cursor-pointer text-sm px-4 py-2.5 gap-2 bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 focus:ring-teal-500 shadow-xs"
+                    onclick="
+                        this.classList.add('opacity-75', 'pointer-events-none');
+                        this.innerHTML = '<svg class=\'w-4 h-4 animate-spin\' fill=\'none\' viewBox=\'0 0 24 24\'><circle class=\'opacity-25\' cx=\'12\' cy=\'12\' r=\'10\' stroke=\'currentColor\' stroke-width=\'4\'></circle><path class=\'opacity-75\' fill=\'currentColor\' d=\'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z\'></path></svg> Menyiapkan Excel...';
+                        setTimeout(() => { this.classList.remove('opacity-75', 'pointer-events-none'); this.innerHTML = '<svg class=\'w-4 h-4\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\'/></svg> Export Excel'; }, 5000);
+                    "
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Export Excel
+                </a>
+                <button
+                    type="button"
+                    @click="exportMenuOpen = !exportMenuOpen"
+                    @click.outside="exportMenuOpen = false"
+                    class="inline-flex items-center justify-center px-2 py-2.5 rounded-r-lg border-l border-teal-500 bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 focus:outline-hidden cursor-pointer"
+                    aria-label="Pilihan Export"
+                    title="Pilihan Export"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <div
+                    x-show="exportMenuOpen"
+                    x-transition
+                    class="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50 text-xs"
+                    style="display: none;"
+                >
+                    <a
+                        href="{{ route('usulans.export', array_merge(request()->query(), ['tab' => $activeTab])) }}"
+                        class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 transition"
+                        @click="exportMenuOpen = false"
+                    >
+                        <span>Export {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }} (Tab Ini)</span>
+                    </a>
+                    <a
+                        href="{{ route('usulans.export', array_merge(request()->query(), ['tab' => $activeTab === \App\Models\Usulan::JENIS_WIFI ? \App\Models\Usulan::JENIS_CCTV : \App\Models\Usulan::JENIS_WIFI])) }}"
+                        class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 transition"
+                        @click="exportMenuOpen = false"
+                    >
+                        <span>Export {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'CCTV' : 'Wifi' }}</span>
+                    </a>
+                    <div class="my-1 border-t border-slate-100"></div>
+                    <a
+                        href="{{ route('usulans.export', array_merge(request()->query(), ['tab' => 'all'])) }}"
+                        class="flex items-center gap-2 px-3 py-2 text-emerald-700 hover:bg-emerald-50 transition font-medium"
+                        @click="exportMenuOpen = false"
+                    >
+                        <span>Export Semua (CCTV & Wifi)</span>
+                    </a>
+                </div>
+            </div>
+            @endcan
         </div>
     </div>
 

@@ -62,6 +62,9 @@ Route::middleware('auth')->group(function () {
         ->name('surveys.export');
 
     Route::resource('surveys', SurveyController::class);
+
+    // Export Usulan Excel (defined before resource to avoid {usulan} catch)
+    Route::get('usulans/export', [UsulanController::class, 'export'])->name('usulans.export');
     Route::resource('usulans', UsulanController::class);
 
     // Superadmin-only routes
