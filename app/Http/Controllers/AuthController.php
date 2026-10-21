@@ -16,9 +16,15 @@ class AuthController extends Controller
     public function showLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return Auth::user()->isKelurahan()
-                ? redirect()->route('usulans.index')
-                : redirect()->route('dashboard');
+            $user = Auth::user();
+
+            if ($user->isKelurahan()) {
+                return $user->hasDefaultPassword()
+                    ? redirect()->route('profile.edit')
+                    : redirect()->route('usulans.index');
+            }
+
+            return redirect()->route('dashboard');
         }
 
         return view('auth.login');
@@ -48,6 +54,11 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
+
+            if ($user->isKelurahan() && $user->hasDefaultPassword()) {
+                return redirect()->route('profile.edit')
+                    ->with('warning', 'Akun Anda masih menggunakan kata sandi default. Anda wajib mengganti kata sandi terlebih dahulu sebelum dapat menginput data usulan.');
+            }
 
             $targetRoute = $user->isKelurahan()
                 ? route('usulans.index')

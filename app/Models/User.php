@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
-#[Fillable(['name', 'email', 'password', 'role', 'is_active'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'password_changed_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -24,6 +25,10 @@ class User extends Authenticatable
 
     public const ROLE_KELURAHAN = 'kelurahan';
 
+    public const DEFAULT_KELURAHAN_PASSWORD = 'kelurahanbanjarmasin';
+
+    protected ?bool $hasDefaultPasswordCache = null;
+
     /**
      * Get the attributes that should be cast.
      *
@@ -35,6 +40,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'password_changed_at' => 'datetime',
         ];
     }
 
@@ -76,6 +82,34 @@ class User extends Authenticatable
         }
 
         return $this->name;
+    }
+
+    /**
+     * Determine if a kelurahan user still uses the default seeded password.
+     */
+    public function hasDefaultPassword(): bool
+    {
+        if (! $this->isKelurahan()) {
+            return false;
+        }
+
+        if ($this->hasDefaultPasswordCache !== null) {
+            return $this->hasDefaultPasswordCache;
+        }
+
+        if ($this->password_changed_at !== null) {
+            return $this->hasDefaultPasswordCache = false;
+        }
+
+        return $this->hasDefaultPasswordCache = Hash::check(self::DEFAULT_KELURAHAN_PASSWORD, (string) $this->password);
+    }
+
+    /**
+     * Clear the default password memoization cache.
+     */
+    public function resetDefaultPasswordCache(): void
+    {
+        $this->hasDefaultPasswordCache = null;
     }
 
     /**

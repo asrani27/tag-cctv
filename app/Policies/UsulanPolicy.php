@@ -51,6 +51,10 @@ class UsulanPolicy
      */
     public function create(User $user): bool
     {
+        if ($user->isKelurahan() && $user->hasDefaultPassword()) {
+            return false;
+        }
+
         return $user->isActive();
     }
 
@@ -60,6 +64,10 @@ class UsulanPolicy
     public function update(User $user, Usulan $usulan): bool
     {
         if (! $user->isActive()) {
+            return false;
+        }
+
+        if ($user->isKelurahan() && $user->hasDefaultPassword()) {
             return false;
         }
 
@@ -83,6 +91,10 @@ class UsulanPolicy
     public function delete(User $user, Usulan $usulan): bool
     {
         if (! $user->isActive()) {
+            return false;
+        }
+
+        if ($user->isKelurahan() && $user->hasDefaultPassword()) {
             return false;
         }
 

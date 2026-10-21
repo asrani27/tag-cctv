@@ -61,6 +61,17 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the kelurahan user still uses default password.
+     */
+    public function withDefaultPassword(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make(User::DEFAULT_KELURAHAN_PASSWORD),
+            'password_changed_at' => null,
+        ]);
+    }
+
+    /**
      * Indicate that the user is inactive.
      */
     public function inactive(): static

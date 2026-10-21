@@ -106,15 +106,36 @@
             </div>
         </x-card>
 
-        <x-card title="Keamanan Kata Sandi" subtitle="Ubah kata sandi akun Anda">
+        <x-card title="Keamanan Kata Sandi" subtitle="Ubah kata sandi akun Anda" id="password-section">
             <div class="space-y-4">
-                <p class="text-xs text-slate-400">Kosongkan jika tidak ingin mengganti kata sandi.</p>
+                @if ($isDefaultPassword ?? ($user->isKelurahan() && $user->hasDefaultPassword()))
+                    <div class="p-3.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-900 text-xs flex items-start gap-2.5">
+                        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>
+                            <span class="font-semibold">Wajib Ganti Kata Sandi:</span>
+                            Akun Anda saat ini masih menggunakan kata sandi bawaan default (<code class="bg-amber-100 text-amber-900 px-1 py-0.5 rounded font-mono text-[11px]">kelurahanbanjarmasin</code>). Anda wajib mengganti kata sandi ini sebelum dapat menginput data usulan.
+                        </div>
+                    </div>
+                @else
+                    <p class="text-xs text-slate-400">Kosongkan jika tidak ingin mengganti kata sandi.</p>
+                @endif
+
+                <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-lg text-xs space-y-1 text-slate-600">
+                    <p class="font-semibold text-slate-700">Kriteria kata sandi baru:</p>
+                    <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-600">
+                        <li>Minimal 8 karakter</li>
+                        <li>Mengandung huruf besar (A-Z) dan huruf kecil (a-z)</li>
+                        <li>Mengandung angka (0-9)</li>
+                        <li>Mengandung simbol / karakter khusus (@$!%*#?& dll)</li>
+                    </ul>
+                </div>
 
                 <x-input
                     type="password"
                     name="current_password"
                     label="Kata Sandi Saat Ini"
                     placeholder="Masukkan kata sandi saat ini"
+                    :required="$isDefaultPassword ?? ($user->isKelurahan() && $user->hasDefaultPassword())"
                 />
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -123,6 +144,7 @@
                         name="password"
                         label="Kata Sandi Baru"
                         placeholder="Minimal 8 karakter"
+                        :required="$isDefaultPassword ?? ($user->isKelurahan() && $user->hasDefaultPassword())"
                     />
 
                     <x-input
@@ -130,6 +152,7 @@
                         name="password_confirmation"
                         label="Konfirmasi Kata Sandi Baru"
                         placeholder="Ulangi kata sandi baru"
+                        :required="$isDefaultPassword ?? ($user->isKelurahan() && $user->hasDefaultPassword())"
                     />
                 </div>
             </div>

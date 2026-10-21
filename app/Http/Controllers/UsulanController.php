@@ -97,6 +97,7 @@ class UsulanController extends Controller
             'currentStatus' => $filters['status'],
             'currentUserId' => $filters['user_id'],
             'isSuperAdmin' => $user->isSuperAdmin(),
+            'isKelurahanWithDefaultPassword' => $user->isKelurahan() && $user->hasDefaultPassword(),
         ]);
     }
 
@@ -151,8 +152,13 @@ class UsulanController extends Controller
         return Excel::download(new UsulanExport($filters, $user), $filename);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
+        if ($request->user()?->isKelurahan() && $request->user()?->hasDefaultPassword()) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Anda wajib mengganti kata sandi default terlebih dahulu sebelum dapat menginput data usulan.');
+        }
+
         Gate::authorize('create', Usulan::class);
 
         $user = $request->user();
@@ -196,6 +202,11 @@ class UsulanController extends Controller
 
     public function store(UsulanRequest $request): RedirectResponse
     {
+        if ($request->user()?->isKelurahan() && $request->user()?->hasDefaultPassword()) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Anda wajib mengganti kata sandi default terlebih dahulu sebelum dapat menginput data usulan.');
+        }
+
         Gate::authorize('create', Usulan::class);
 
         $data = $request->validated();
@@ -239,8 +250,13 @@ class UsulanController extends Controller
         return view('usulans.show', compact('usulan'));
     }
 
-    public function edit(Usulan $usulan): View
+    public function edit(Request $request, Usulan $usulan): View|RedirectResponse
     {
+        if ($request->user()?->isKelurahan() && $request->user()?->hasDefaultPassword()) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Anda wajib mengganti kata sandi default terlebih dahulu sebelum dapat mengubah data usulan.');
+        }
+
         Gate::authorize('update', $usulan);
 
         $currentJenis = $usulan->jenis ?: Usulan::JENIS_CCTV;
@@ -264,6 +280,11 @@ class UsulanController extends Controller
 
     public function update(UsulanRequest $request, Usulan $usulan): RedirectResponse
     {
+        if ($request->user()?->isKelurahan() && $request->user()?->hasDefaultPassword()) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Anda wajib mengganti kata sandi default terlebih dahulu sebelum dapat mengubah data usulan.');
+        }
+
         Gate::authorize('update', $usulan);
 
         $data = $request->validated();

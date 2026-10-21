@@ -14,7 +14,7 @@ class KelurahanUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $password = Hash::make('kelurahanbanjarmasin');
+        $password = Hash::make(User::DEFAULT_KELURAHAN_PASSWORD);
 
         // Collect names from KecamatanSeeder::DATA
         $kelurahanNames = [];
@@ -41,6 +41,7 @@ class KelurahanUserSeeder extends Seeder
                     'password' => $password,
                     'role' => User::ROLE_KELURAHAN,
                     'is_active' => true,
+                    'password_changed_at' => null,
                 ]
             );
         }

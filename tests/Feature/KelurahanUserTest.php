@@ -7,6 +7,7 @@ use App\Models\Usulan;
 use Database\Seeders\KecamatanSeeder;
 use Database\Seeders\KelurahanUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -32,7 +33,7 @@ class KelurahanUserTest extends TestCase
         $this->assertEquals('Pemurus Dalam', $pemurusDalam->getKelurahanName());
     }
 
-    public function test_kelurahan_user_can_login_with_default_password_and_redirects_to_usulans(): void
+    public function test_kelurahan_user_can_login_with_default_password_and_is_redirected_to_profile(): void
     {
         $this->seed(KecamatanSeeder::class);
         $this->seed(KelurahanUserSeeder::class);
@@ -42,9 +43,30 @@ class KelurahanUserTest extends TestCase
             'password' => 'kelurahanbanjarmasin',
         ]);
 
-        $response->assertRedirect(route('usulans.index'));
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('warning');
         $this->assertAuthenticated();
         $this->assertTrue(auth()->user()->isKelurahan());
+        $this->assertTrue(auth()->user()->hasDefaultPassword());
+    }
+
+    public function test_kelurahan_user_with_custom_password_redirects_to_usulans_on_login(): void
+    {
+        $this->seed(KecamatanSeeder::class);
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->create([
+            'email' => 'pemurusdalam@banjarmasinkota.go.id',
+            'password' => Hash::make('CustomPass123!'),
+            'password_changed_at' => now(),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'pemurusdalam@banjarmasinkota.go.id',
+            'password' => 'CustomPass123!',
+        ]);
+
+        $response->assertRedirect(route('usulans.index'));
+        $this->assertAuthenticated();
+        $this->assertFalse(auth()->user()->hasDefaultPassword());
     }
 
     public function test_kelurahan_user_navigation_only_shows_data_usulan_and_profil(): void
@@ -103,15 +125,15 @@ class KelurahanUserTest extends TestCase
 
     public function test_kelurahan_user_can_update_profile_and_change_password(): void
     {
-        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->create([
-            'password' => Hash::make('kelurahanbanjarmasin'),
-        ]);
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        $this->assertTrue($kelurahanUser->hasDefaultPassword());
 
         $response = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
             'name' => 'Kelurahan Pemurus Dalam Baru',
             'current_password' => 'kelurahanbanjarmasin',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'StrongPass123!',
+            'password_confirmation' => 'StrongPass123!',
         ]);
 
         $response->assertRedirect(route('profile.edit'));
@@ -119,7 +141,9 @@ class KelurahanUserTest extends TestCase
 
         $kelurahanUser->refresh();
         $this->assertEquals('Kelurahan Pemurus Dalam Baru', $kelurahanUser->name);
-        $this->assertTrue(Hash::check('newpassword123', $kelurahanUser->password));
+        $this->assertTrue(Hash::check('StrongPass123!', $kelurahanUser->password));
+        $this->assertNotNull($kelurahanUser->password_changed_at);
+        $this->assertFalse($kelurahanUser->hasDefaultPassword());
     }
 
     public function test_kelurahan_user_cannot_change_official_email(): void
@@ -224,5 +248,192 @@ class KelurahanUserTest extends TestCase
             'email' => 'custombaru@banjarmasinkota.go.id',
             'role' => User::ROLE_KELURAHAN,
         ]);
+    }
+
+    public function test_kelurahan_user_password_change_validates_complexity_requirements(): void
+    {
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        // 1. Password is required if on default password
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 2. Too short (< 8 chars)
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'Aa1!',
+            'password_confirmation' => 'Aa1!',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 3. No uppercase
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'lowercase123!',
+            'password_confirmation' => 'lowercase123!',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 4. No number
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'NoNumberSymbol!',
+            'password_confirmation' => 'NoNumberSymbol!',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 5. No symbol
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'NoSymbolNumber123',
+            'password_confirmation' => 'NoSymbolNumber123',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 6. Same as current password
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'kelurahanbanjarmasin',
+            'password_confirmation' => 'kelurahanbanjarmasin',
+        ]);
+        $res->assertSessionHasErrors(['password']);
+
+        // 7. Wrong current password
+        $res = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'wrongpassword',
+            'password' => 'StrongPass123!',
+            'password_confirmation' => 'StrongPass123!',
+        ]);
+        $res->assertSessionHasErrors(['current_password']);
+    }
+
+    public function test_kelurahan_user_with_default_password_is_blocked_from_submitting_usulan(): void
+    {
+        $this->seed(KecamatanSeeder::class);
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        $this->assertFalse(Gate::forUser($kelurahanUser)->allows('create', Usulan::class));
+
+        // GET usulans.create redirects to profile.edit
+        $response = $this->actingAs($kelurahanUser)->get(route('usulans.create'));
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('warning');
+
+        // POST usulans.store redirects to profile.edit and nothing is stored
+        $storeResponse = $this->actingAs($kelurahanUser)->post(route('usulans.store'), [
+            'jenis' => Usulan::JENIS_CCTV,
+            'nama_lokasi' => 'Gang',
+            'kelurahan' => 'Pemurus Dalam',
+            'kecamatan' => 'Banjarmasin Selatan',
+            'rt' => '05',
+            'latitude' => -3.33,
+            'longitude' => 114.59,
+            'kategori_titik' => 'Rawan Kriminalitas',
+            'keterangan' => 'Keamanan wilayah lingkungan warga',
+        ]);
+
+        $storeResponse->assertRedirect(route('profile.edit'));
+        $storeResponse->assertSessionHas('warning');
+        $this->assertDatabaseMissing('usulans', [
+            'rt' => '05',
+            'user_id' => $kelurahanUser->id,
+        ]);
+    }
+
+    public function test_kelurahan_user_with_default_password_is_blocked_from_modifying_usulan(): void
+    {
+        $this->seed(KecamatanSeeder::class);
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        $usulan = Usulan::factory()->create([
+            'user_id' => $kelurahanUser->id,
+            'kelurahan' => 'Pemurus Dalam',
+            'status' => 'Diajukan',
+        ]);
+
+        $this->assertFalse(Gate::forUser($kelurahanUser)->allows('update', $usulan));
+        $this->assertFalse(Gate::forUser($kelurahanUser)->allows('delete', $usulan));
+
+        // GET usulans.edit redirects to profile.edit
+        $response = $this->actingAs($kelurahanUser)->get(route('usulans.edit', $usulan));
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('warning');
+
+        // PUT usulans.update redirects to profile.edit
+        $updateResponse = $this->actingAs($kelurahanUser)->put(route('usulans.update', $usulan), [
+            'jenis' => Usulan::JENIS_CCTV,
+            'nama_lokasi' => 'Jalan',
+            'kelurahan' => 'Pemurus Dalam',
+            'rt' => '02',
+            'latitude' => -3.33,
+            'longitude' => 114.59,
+            'kategori_titik' => 'Persimpangan',
+        ]);
+        $updateResponse->assertRedirect(route('profile.edit'));
+        $updateResponse->assertSessionHas('warning');
+    }
+
+    public function test_kelurahan_user_after_changing_password_can_submit_usulan(): void
+    {
+        $this->seed(KecamatanSeeder::class);
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        // Initially blocked
+        $this->assertFalse(Gate::forUser($kelurahanUser)->allows('create', Usulan::class));
+
+        // Change password
+        $response = $this->actingAs($kelurahanUser)->put(route('profile.update'), [
+            'name' => 'Kelurahan Pemurus Dalam',
+            'current_password' => 'kelurahanbanjarmasin',
+            'password' => 'StrongPass123!',
+            'password_confirmation' => 'StrongPass123!',
+        ]);
+        $response->assertRedirect(route('profile.edit'));
+
+        $kelurahanUser->refresh();
+        $this->assertFalse($kelurahanUser->hasDefaultPassword());
+        $this->assertTrue(Gate::forUser($kelurahanUser)->allows('create', Usulan::class));
+
+        // Can access create page
+        $createResponse = $this->actingAs($kelurahanUser)->get(route('usulans.create'));
+        $createResponse->assertStatus(200);
+
+        // Can store usulan
+        $storeResponse = $this->actingAs($kelurahanUser)->post(route('usulans.store'), [
+            'jenis' => Usulan::JENIS_CCTV,
+            'nama_lokasi' => 'Gang',
+            'kelurahan' => 'Pemurus Dalam',
+            'kecamatan' => 'Banjarmasin Selatan',
+            'rt' => '07',
+            'latitude' => -3.33,
+            'longitude' => 114.59,
+            'kategori_titik' => 'Rawan Kriminalitas',
+            'keterangan' => 'Keamanan wilayah lingkungan warga',
+        ]);
+
+        $storeResponse->assertRedirect(route('usulans.index'));
+        $this->assertDatabaseHas('usulans', [
+            'rt' => '07',
+            'user_id' => $kelurahanUser->id,
+        ]);
+    }
+
+    public function test_kelurahan_user_with_default_password_sees_warning_banner_on_usulan_index(): void
+    {
+        $kelurahanUser = User::factory()->kelurahan('Pemurus Dalam')->withDefaultPassword()->create();
+
+        $response = $this->actingAs($kelurahanUser)->get(route('usulans.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Perhatian: Wajib Ganti Kata Sandi');
+        $response->assertSee('Ganti Password untuk Tambah Usulan');
+        $response->assertDontSee('Tambah Usulan CCTV');
     }
 }

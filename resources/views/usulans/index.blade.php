@@ -5,6 +5,26 @@
 
 @section('content')
 <div class="space-y-5">
+    @if (auth()->user()?->isKelurahan() && auth()->user()?->hasDefaultPassword())
+        <div class="p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <div class="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-amber-900">Perhatian: Wajib Ganti Kata Sandi</h3>
+                    <p class="text-xs text-amber-800 mt-0.5">
+                        Akun Kelurahan Anda masih menggunakan kata sandi default sistem. Anda tidak dapat melakukan input data usulan baru sebelum mengganti kata sandi akun Anda.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('profile.edit') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition shrink-0 shadow-xs">
+                <span>Ganti Password Sekarang</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    @endif
+
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-slate-900">
@@ -15,10 +35,17 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-            <x-button variant="primary" size="md" :href="route('usulans.create', ['jenis' => $activeTab])">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Tambah Usulan {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }}
-            </x-button>
+            @if (auth()->user()?->isKelurahan() && auth()->user()?->hasDefaultPassword())
+                <x-button variant="secondary" size="md" :href="route('profile.edit')" class="border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" title="Ganti password terlebih dahulu untuk menambah usulan">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Ganti Password untuk Tambah Usulan
+                </x-button>
+            @else
+                <x-button variant="primary" size="md" :href="route('usulans.create', ['jenis' => $activeTab])">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Tambah Usulan {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }}
+                </x-button>
+            @endif
 
             @can('export', \App\Models\Usulan::class)
             <div class="relative inline-flex" x-data="{ exportMenuOpen: false }">
@@ -128,9 +155,15 @@
                     <p class="text-xs text-slate-500 mt-1 mb-4">
                         {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Silakan ajukan usulan titik Wifi publik baru untuk lingkungan Anda.' : 'Silakan ajukan usulan titik CCTV baru untuk lingkungan Anda.' }}
                     </p>
-                    <x-button variant="primary" size="sm" :href="route('usulans.create', ['jenis' => $activeTab])">
-                        Tambah Usulan {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }}
-                    </x-button>
+                    @if (auth()->user()?->isKelurahan() && auth()->user()?->hasDefaultPassword())
+                        <x-button variant="primary" size="sm" :href="route('profile.edit')">
+                            Ganti Password untuk Tambah Usulan
+                        </x-button>
+                    @else
+                        <x-button variant="primary" size="sm" :href="route('usulans.create', ['jenis' => $activeTab])">
+                            Tambah Usulan {{ $activeTab === \App\Models\Usulan::JENIS_WIFI ? 'Wifi' : 'CCTV' }}
+                        </x-button>
+                    @endif
                 @endif
             </div>
         @else
