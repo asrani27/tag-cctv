@@ -33,11 +33,14 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">
                                     {{ $survey->kecamatan ?? 'Kecamatan -' }}
                                 </span>
-                                @if ($survey->tersedia_fiber_optik)
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> FO Siap
-                                    </span>
-                                @endif
+                                <div class="flex items-center gap-1.5">
+                                    <x-badge :variant="$survey->status_badge_variant" size="xs">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge>
+                                    @if ($survey->tersedia_fiber_optik)
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> FO Siap
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                             <div>

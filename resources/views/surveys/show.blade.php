@@ -18,12 +18,29 @@
                 @if ($survey->kecamatan)
                     <x-badge variant="slate" size="sm">{{ $survey->kecamatan }}</x-badge>
                 @endif
+                <x-badge :variant="$survey->status_badge_variant" size="sm">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge>
             </div>
             <h1 class="text-xl font-bold text-slate-900">{{ $survey->alamat ?? 'Survey #' . $survey->id }}</h1>
             <p class="text-xs text-slate-500 mt-0.5">Kelurahan {{ $survey->kelurahan ?? '-' }} &bull; Tanggal {{ $survey->created_at ? $survey->created_at->format('d/m/Y') : '-' }}</p>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+            @can('update', $survey)
+                <form method="POST" action="{{ route('surveys.update-status', $survey) }}" class="inline-flex items-center gap-1.5">
+                    @csrf
+                    @method('PATCH')
+                    <select
+                        name="status"
+                        onchange="this.form.submit()"
+                        aria-label="Status Pemasangan"
+                        class="text-xs font-semibold rounded-lg border px-2.5 py-1.5 pr-7 cursor-pointer transition {{ $survey->status === 'Selesai Dipasang' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ($survey->status === 'Proses Pemasangan' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200') }}"
+                    >
+                        @foreach (\App\Models\SurveyLocation::STATUS_OPTIONS as $st)
+                            <option value="{{ $st }}" @selected(($survey->status ?? \App\Models\SurveyLocation::STATUS_BELUM_TERPASANG) === $st)>{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            @endcan
             <x-button variant="outline" size="sm" :href="route('surveys.index')">
                 Kembali
             </x-button>
@@ -85,12 +102,23 @@
     document.addEventListener('DOMContentLoaded', function() {
         const lat = {{ $survey->latitude }};
         const lng = {{ $survey->longitude }};
+        const markerColor = @json($survey->marker_color);
         const map = L.map('mini-map').setView([lat, lng], 16);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
-        const marker = L.marker([lat, lng]).addTo(map);
+        const icon = L.divIcon({
+            className: 'custom-status-marker',
+            html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="26" height="38">
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 24 12 24s12-15.5 12-24c0-6.627-5.373-12-12-12z" fill="${markerColor}" stroke="#ffffff" stroke-width="2"/>
+                <circle cx="12" cy="12" r="5" fill="#ffffff"/>
+            </svg>`,
+            iconSize: [26, 38],
+            iconAnchor: [13, 38],
+            popupAnchor: [0, -34],
+        });
+        const marker = L.marker([lat, lng], { icon }).addTo(map);
         marker.bindPopup(`
             <div class="text-xs p-1">
                 <div class="font-bold text-slate-900 mb-1">{{ addslashes($survey->alamat ?? 'Titik Survey') }}</div>

@@ -11,6 +11,7 @@
                 @endif
                 <th class="px-3 py-3 text-center">CCTV</th>
                 <th class="px-3 py-3 text-center">AP</th>
+                <th class="px-3 py-3">Status</th>
                 <th class="px-3 py-3">Bandwidth</th>
                 <th class="px-3 py-3">Latitude</th>
                 <th class="px-3 py-3">Longitude</th>
@@ -42,6 +43,26 @@
                     @endif
                     <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_cctv ?? 0 }}</td>
                     <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_ap ?? 0 }}</td>
+                    <td class="px-3 py-3.5 whitespace-nowrap">
+                        @can('update', $survey)
+                            <form method="POST" action="{{ route('surveys.update-status', $survey) }}">
+                                @csrf
+                                @method('PATCH')
+                                <select
+                                    name="status"
+                                    onchange="this.form.submit()"
+                                    aria-label="Ubah Status Pemasangan #{{ $survey->id }}"
+                                    class="text-[11px] font-semibold rounded-md border px-2 py-1 pr-6 cursor-pointer transition {{ $survey->status === 'Selesai Dipasang' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ($survey->status === 'Proses Pemasangan' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200') }}"
+                                >
+                                    @foreach (\App\Models\SurveyLocation::STATUS_OPTIONS as $st)
+                                        <option value="{{ $st }}" @selected(($survey->status ?? \App\Models\SurveyLocation::STATUS_BELUM_TERPASANG) === $st)>{{ $st }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        @else
+                            <x-badge :variant="$survey->status_badge_variant" size="xs">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge>
+                        @endcan
+                    </td>
                     <td class="px-3 py-3.5 font-mono text-[11px] text-slate-600">{{ $survey->bandwidth ?? '-' }}</td>
                     <td class="px-3 py-3.5 font-mono text-[11px] text-slate-500">{{ $survey->latitude ? number_format($survey->latitude, 6) : '-' }}</td>
                     <td class="px-3 py-3.5 font-mono text-[11px] text-slate-500">{{ $survey->longitude ? number_format($survey->longitude, 6) : '-' }}</td>

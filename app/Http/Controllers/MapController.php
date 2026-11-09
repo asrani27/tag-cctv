@@ -31,6 +31,8 @@ class MapController extends Controller
 
         $currentKecamatan = $request->input('kecamatan', '');
         $currentKelurahan = $request->input('kelurahan', '');
+        $currentPerangkat = $request->input('perangkat', '');
+        $currentStatus = $request->input('status', '');
 
         if ($request->filled('kecamatan')) {
             $query->where('kecamatan', $currentKecamatan);
@@ -38,6 +40,16 @@ class MapController extends Controller
 
         if ($request->filled('kelurahan')) {
             $query->where('kelurahan', $currentKelurahan);
+        }
+
+        if ($currentPerangkat === 'cctv') {
+            $query->where('jumlah_cctv', '>', 0);
+        } elseif ($currentPerangkat === 'wifi') {
+            $query->where('jumlah_ap', '>', 0);
+        }
+
+        if ($request->filled('status') && in_array($currentStatus, SurveyLocation::STATUS_OPTIONS, true)) {
+            $query->where('status', $currentStatus);
         }
 
         $surveys = $query->get([
@@ -48,6 +60,7 @@ class MapController extends Controller
             'alamat',
             'kelurahan',
             'kecamatan',
+            'status',
             'jumlah_cctv',
             'jumlah_ap',
             'tersedia_fiber_optik',
@@ -61,6 +74,8 @@ class MapController extends Controller
                 'alamat' => $s->alamat,
                 'kelurahan' => $s->kelurahan,
                 'kecamatan' => $s->kecamatan,
+                'status' => $s->status ?? SurveyLocation::STATUS_BELUM_TERPASANG,
+                'marker_color' => $s->marker_color,
                 'jumlah_cctv' => $s->jumlah_cctv,
                 'jumlah_ap' => $s->jumlah_ap,
                 'tersedia_fiber_optik' => $s->tersedia_fiber_optik,
@@ -78,8 +93,11 @@ class MapController extends Controller
             'surveys' => $surveys,
             'kecamatanOptions' => $kecamatanOptions,
             'kelurahanOptions' => $kelurahanOptions,
+            'statusOptions' => SurveyLocation::STATUS_OPTIONS,
             'currentKecamatan' => $currentKecamatan,
             'currentKelurahan' => $currentKelurahan,
+            'currentPerangkat' => $currentPerangkat,
+            'currentStatus' => $currentStatus,
             'isSuperAdmin' => $user?->isSuperAdmin() ?? false,
             'isUser' => $user?->isUser() ?? false,
         ]);
@@ -112,6 +130,16 @@ class MapController extends Controller
             $query->where('kelurahan', $request->input('kelurahan'));
         }
 
+        if ($request->input('perangkat') === 'cctv') {
+            $query->where('jumlah_cctv', '>', 0);
+        } elseif ($request->input('perangkat') === 'wifi') {
+            $query->where('jumlah_ap', '>', 0);
+        }
+
+        if ($request->filled('status') && in_array($request->input('status'), SurveyLocation::STATUS_OPTIONS, true)) {
+            $query->where('status', $request->input('status'));
+        }
+
         $locations = $query->get();
 
         $features = $locations->map(function ($loc) use ($user) {
@@ -130,6 +158,8 @@ class MapController extends Controller
                     'alamat' => $loc->alamat,
                     'kelurahan' => $loc->kelurahan,
                     'kecamatan' => $loc->kecamatan,
+                    'status' => $loc->status ?? SurveyLocation::STATUS_BELUM_TERPASANG,
+                    'marker_color' => $loc->marker_color,
                     'jumlah_cctv' => $loc->jumlah_cctv,
                     'jumlah_ap' => $loc->jumlah_ap,
                     'diinput_oleh' => $creator,

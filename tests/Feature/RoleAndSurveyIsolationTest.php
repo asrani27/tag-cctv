@@ -164,4 +164,76 @@ class RoleAndSurveyIsolationTest extends TestCase
         $resGeojsonAdmin->assertOk();
         $this->assertCount(2, $resGeojsonAdmin->json('features'));
     }
+
+    public function test_survey_status_can_only_be_updated_by_superadmin_or_owner(): void
+    {
+        $surveyA = SurveyLocation::factory()->create([
+            'user_id' => $this->userA->id,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        $surveyB = SurveyLocation::factory()->create([
+            'user_id' => $this->userB->id,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        $legacySurvey = SurveyLocation::factory()->create([
+            'user_id' => null,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        // Owner (User A) can update own survey status
+        $this->actingAs($this->userA)
+            ->patch(route('surveys.update-status', $surveyA), [
+                'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('survey_locations', [
+            'id' => $surveyA->id,
+            'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
+        ]);
+
+        // User A cannot update User B's survey status
+        $this->actingAs($this->userA)
+            ->patch(route('surveys.update-status', $surveyB), [
+                'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('survey_locations', [
+            'id' => $surveyB->id,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        // User A cannot update legacy survey status
+        $this->actingAs($this->userA)
+            ->patch(route('surveys.update-status', $legacySurvey), [
+                'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
+            ])
+            ->assertForbidden();
+
+        // Superadmin can update any survey status (User B's and legacy)
+        $this->actingAs($this->superadmin)
+            ->patch(route('surveys.update-status', $surveyB), [
+                'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('survey_locations', [
+            'id' => $surveyB->id,
+            'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
+        ]);
+
+        $this->actingAs($this->superadmin)
+            ->patch(route('surveys.update-status', $legacySurvey), [
+                'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('survey_locations', [
+            'id' => $legacySurvey->id,
+            'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
+        ]);
+    }
 }

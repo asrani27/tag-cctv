@@ -45,9 +45,12 @@
             @foreach ($surveys as $survey)
                 <div class="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition flex flex-col justify-between">
                     <div class="space-y-3">
-                        <div class="flex items-start justify-between">
+                        <div class="flex items-start justify-between gap-2">
                             <span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ $survey->kecamatan ?? '-' }}</span>
-                            @if ($survey->tersedia_fiber_optik)<span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">FO Siap</span>@endif
+                            <div class="flex items-center gap-1.5">
+                                <x-badge :variant="$survey->status_badge_variant" size="xs">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge>
+                                @if ($survey->tersedia_fiber_optik)<span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">FO Siap</span>@endif
+                            </div>
                         </div>
                         <h3 class="font-bold text-slate-900 text-base line-clamp-2">{{ $survey->alamat ?? 'Alamat belum diinput' }}</h3>
                         <p class="text-xs text-slate-500">Kel. {{ $survey->kelurahan ?? '-' }} &bull; RT {{ $survey->rt ?? '-' }}/RW {{ $survey->rw ?? '-' }}</p>

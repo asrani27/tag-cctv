@@ -75,6 +75,39 @@ class PublicPagesTest extends TestCase
         $filteredResponse->assertDontSee('Titik Banjarmasin Selatan');
     }
 
+    public function test_public_map_can_be_filtered_by_perangkat_cctv_or_wifi(): void
+    {
+        SurveyLocation::factory()->create([
+            'alamat' => 'Titik Khusus CCTV',
+            'kecamatan' => 'Banjarmasin Utara',
+            'kelurahan' => 'Sungai Miai',
+            'latitude' => -3.2950,
+            'longitude' => 114.5900,
+            'jumlah_cctv' => 3,
+            'jumlah_ap' => 0,
+        ]);
+
+        SurveyLocation::factory()->create([
+            'alamat' => 'Titik Khusus WiFi AP',
+            'kecamatan' => 'Banjarmasin Selatan',
+            'kelurahan' => 'Pemurus Dalam',
+            'latitude' => -3.3450,
+            'longitude' => 114.6100,
+            'jumlah_cctv' => 0,
+            'jumlah_ap' => 2,
+        ]);
+
+        $cctvResponse = $this->get('/map?perangkat=cctv');
+        $cctvResponse->assertStatus(200);
+        $cctvResponse->assertSee('Titik Khusus CCTV');
+        $cctvResponse->assertDontSee('Titik Khusus WiFi AP');
+
+        $wifiResponse = $this->get('/map?perangkat=wifi');
+        $wifiResponse->assertStatus(200);
+        $wifiResponse->assertSee('Titik Khusus WiFi AP');
+        $wifiResponse->assertDontSee('Titik Khusus CCTV');
+    }
+
     public function test_public_survey_index_can_be_rendered_and_searched(): void
     {
         SurveyLocation::factory()->create([
@@ -170,5 +203,45 @@ class PublicPagesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Foto Dokumentasi');
         $response->assertSee('Belum ada foto dokumentasi untuk titik survei ini.');
+    }
+
+    public function test_public_map_markers_have_status_colors_and_can_be_filtered_by_status(): void
+    {
+        SurveyLocation::factory()->create([
+            'alamat' => 'Titik Merah Belum',
+            'latitude' => -3.3100,
+            'longitude' => 114.5800,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        SurveyLocation::factory()->create([
+            'alamat' => 'Titik Orange Proses',
+            'latitude' => -3.3200,
+            'longitude' => 114.5900,
+            'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
+        ]);
+
+        SurveyLocation::factory()->create([
+            'alamat' => 'Titik Hijau Selesai',
+            'latitude' => -3.3300,
+            'longitude' => 114.6000,
+            'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
+        ]);
+
+        // Filter map by status
+        $resSelesai = $this->get('/map?status='.urlencode(SurveyLocation::STATUS_SELESAI_DIPASANG));
+        $resSelesai->assertStatus(200);
+        $resSelesai->assertSee('Titik Hijau Selesai');
+        $resSelesai->assertDontSee('Titik Merah Belum');
+        $resSelesai->assertDontSee('Titik Orange Proses');
+
+        // Verify geojson colors: Merah (#dc2626), Orange (#f97316), Hijau (#16a34a)
+        $resGeoAll = $this->getJson('/map/geojson');
+        $resGeoAll->assertStatus(200);
+        $features = collect($resGeoAll->json('features'))->keyBy('properties.alamat');
+
+        $this->assertEquals('#dc2626', $features['Titik Merah Belum']['properties']['marker_color']);
+        $this->assertEquals('#f97316', $features['Titik Orange Proses']['properties']['marker_color']);
+        $this->assertEquals('#16a34a', $features['Titik Hijau Selesai']['properties']['marker_color']);
     }
 }

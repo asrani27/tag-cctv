@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\SurveyLocation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SurveyRequest extends FormRequest
 {
@@ -54,6 +55,7 @@ class SurveyRequest extends FormRequest
             'rw' => ['nullable', 'string', 'max:10'],
             'kelurahan' => ['nullable', 'string', 'max:255'],
             'kecamatan' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', Rule::in(SurveyLocation::STATUS_OPTIONS)],
 
             // 2. Tujuan Layanan
             'keamanan' => ['nullable', 'boolean'],

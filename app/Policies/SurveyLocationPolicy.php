@@ -53,7 +53,7 @@ class SurveyLocationPolicy
      */
     public function update(User $user, SurveyLocation $surveyLocation): bool
     {
-        if (! $user->isActive()) {
+        if (! $user->isActive() || $user->isKelurahan()) {
             return false;
         }
 

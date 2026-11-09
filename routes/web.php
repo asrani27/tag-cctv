@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         ->get('surveys/export', [SurveyController::class, 'export'])
         ->name('surveys.export');
 
+    Route::patch('surveys/{survey}/status', [SurveyController::class, 'updateStatus'])->name('surveys.update-status');
     Route::resource('surveys', SurveyController::class);
 
     // Export Usulan Excel (defined before resource to avoid {usulan} catch)

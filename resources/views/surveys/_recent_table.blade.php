@@ -17,6 +17,7 @@
                     <th class="px-4 py-3">Kecamatan</th>
                     <th class="px-3 py-3 text-center">CCTV</th>
                     <th class="px-3 py-3 text-center">AP</th>
+                    <th class="px-3 py-3">Status</th>
                     @if (auth()->user()?->isSuperAdmin())
                         <th class="px-4 py-3">Diinput Oleh</th>
                     @endif
@@ -34,6 +35,26 @@
                         <td class="px-4 py-3.5"><x-badge variant="emerald" size="xs">{{ $survey->kecamatan ?? '-' }}</x-badge></td>
                         <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_cctv ?? 0 }}</td>
                         <td class="px-3 py-3.5 text-center font-semibold text-slate-800">{{ $survey->jumlah_ap ?? 0 }}</td>
+                        <td class="px-3 py-3.5 whitespace-nowrap">
+                            @can('update', $survey)
+                                <form method="POST" action="{{ route('surveys.update-status', $survey) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select
+                                        name="status"
+                                        onchange="this.form.submit()"
+                                        aria-label="Ubah Status Pemasangan #{{ $survey->id }}"
+                                        class="text-[11px] font-semibold rounded-md border px-2 py-1 pr-6 cursor-pointer transition {{ $survey->status === 'Selesai Dipasang' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ($survey->status === 'Proses Pemasangan' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200') }}"
+                                    >
+                                        @foreach (\App\Models\SurveyLocation::STATUS_OPTIONS as $st)
+                                            <option value="{{ $st }}" @selected(($survey->status ?? \App\Models\SurveyLocation::STATUS_BELUM_TERPASANG) === $st)>{{ $st }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @else
+                                <x-badge :variant="$survey->status_badge_variant" size="xs">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge>
+                            @endcan
+                        </td>
                         @if (auth()->user()?->isSuperAdmin())
                             <td class="px-4 py-3.5">
                                 <span class="font-medium text-slate-800">{{ $survey->user?->name ?? 'Data Lama' }}</span>

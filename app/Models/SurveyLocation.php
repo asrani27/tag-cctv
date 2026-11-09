@@ -21,6 +21,10 @@ class SurveyLocation extends Model
             if (! empty($survey->kelurahan)) {
                 $survey->kelurahan = self::normalizeKelurahanName($survey->kelurahan);
             }
+
+            if (empty($survey->status)) {
+                $survey->status = self::STATUS_BELUM_TERPASANG;
+            }
         });
 
         static::deleting(function (SurveyLocation $survey) {
@@ -36,6 +40,35 @@ class SurveyLocation extends Model
      * @var string
      */
     protected $table = 'survey_locations';
+
+    /**
+     * Status pemasangan titik survei CCTV & WiFi.
+     */
+    public const STATUS_BELUM_TERPASANG = 'Belum Terpasang';
+
+    public const STATUS_PROSES_PEMASANGAN = 'Proses Pemasangan';
+
+    public const STATUS_SELESAI_DIPASANG = 'Selesai Dipasang';
+
+    /**
+     * Daftar opsi status pemasangan.
+     *
+     * @var list<string>
+     */
+    public const STATUS_OPTIONS = [
+        self::STATUS_BELUM_TERPASANG,
+        self::STATUS_PROSES_PEMASANGAN,
+        self::STATUS_SELESAI_DIPASANG,
+    ];
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'status' => self::STATUS_BELUM_TERPASANG,
+    ];
 
     /**
      * Daftar Kecamatan di Kota Banjarmasin.
@@ -141,6 +174,7 @@ class SurveyLocation extends Model
         'rw',
         'kelurahan',
         'kecamatan',
+        'status',
         'keamanan',
         'akses_wifi',
         'lalin',
@@ -251,6 +285,11 @@ class SurveyLocation extends Model
             $query->where('kelurahan', $filters['kelurahan']);
         }
 
+        // Filter Status Pemasangan
+        if (! empty($filters['status']) && in_array($filters['status'], self::STATUS_OPTIONS, true)) {
+            $query->where('status', $filters['status']);
+        }
+
         // Filter Konektivitas
         $koneksi = strtolower((string) ($filters['koneksi'] ?? ''));
         if ($koneksi !== '') {
@@ -280,6 +319,30 @@ class SurveyLocation extends Model
     public function hasCoordinates(): bool
     {
         return ! is_null($this->latitude) && ! is_null($this->longitude);
+    }
+
+    /**
+     * Get badge variant for the current status.
+     */
+    public function getStatusBadgeVariantAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_SELESAI_DIPASANG => 'emerald',
+            self::STATUS_PROSES_PEMASANGAN => 'amber',
+            default => 'rose',
+        };
+    }
+
+    /**
+     * Get hex color for map marker based on current status.
+     */
+    public function getMarkerColorAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_SELESAI_DIPASANG => '#16a34a',
+            self::STATUS_PROSES_PEMASANGAN => '#f97316',
+            default => '#dc2626',
+        };
     }
 
     /**

@@ -35,6 +35,7 @@ class SurveyLocationFactory extends Factory
             'rw' => str_pad((string) fake()->numberBetween(1, 10), 2, '0', STR_PAD_LEFT),
             'kelurahan' => $kelurahan,
             'kecamatan' => $kecamatan,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
             'keamanan' => fake()->boolean(80),
             'akses_wifi' => fake()->boolean(60),
             'lalin' => fake()->boolean(50),

@@ -23,6 +23,7 @@ test('survey_locations table has expected columns and no_titik does not exist', 
         'rw',
         'kelurahan',
         'kecamatan',
+        'status',
         'keamanan',
         'akses_wifi',
         'lalin',
@@ -72,7 +73,9 @@ test('survey location model can be created with null values', function () {
     expect($survey->id)->toBeGreaterThan(0)
         ->and($survey->latitude)->toBeNull()
         ->and($survey->longitude)->toBeNull()
-        ->and($survey->alamat)->toBeNull();
+        ->and($survey->alamat)->toBeNull()
+        ->and($survey->status)->toBe(SurveyLocation::STATUS_BELUM_TERPASANG)
+        ->and($survey->marker_color)->toBe('#dc2626');
 
     $survey->delete();
 });

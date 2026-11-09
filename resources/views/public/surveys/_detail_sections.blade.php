@@ -5,6 +5,7 @@
         <div class="flex justify-between py-1 border-b border-slate-100"><span>RT/RW:</span><strong>{{ $survey->rt ?? '-' }}/{{ $survey->rw ?? '-' }}</strong></div>
         <div class="flex justify-between py-1 border-b border-slate-100"><span>Kelurahan:</span><strong>{{ $survey->kelurahan ?? '-' }}</strong></div>
         <div class="flex justify-between py-1 border-b border-slate-100"><span>Kecamatan:</span><strong>{{ $survey->kecamatan ?? '-' }}</strong></div>
+        <div class="flex justify-between py-1 border-b border-slate-100"><span>Status Pemasangan:</span><x-badge :variant="$survey->status_badge_variant" size="xs">{{ $survey->status ?? 'Belum Terpasang' }}</x-badge></div>
         <div class="flex justify-between py-1 border-b border-slate-100"><span>Koordinat:</span><strong class="font-mono">{{ $survey->hasCoordinates() ? "{$survey->latitude}, {$survey->longitude}" : 'Nihil' }}</strong></div>
     </div>
     <div class="bg-white rounded-xl border border-slate-200 p-5">

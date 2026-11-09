@@ -95,6 +95,21 @@
             </select>
         </div>
         <div>
+            <label for="status" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Status Pemasangan
+            </label>
+            <select
+                name="status"
+                id="status"
+                class="block w-full rounded-lg border border-slate-300 text-sm px-3 py-2 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200/60"
+            >
+                <option value="">Semua Status</option>
+                @foreach ($statusOptions ?? \App\Models\SurveyLocation::STATUS_OPTIONS as $st)
+                    <option value="{{ $st }}" @selected(($currentStatus ?? '') === $st)>{{ $st }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
             <label for="tanggal_mulai" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                 Tanggal Mulai
             </label>
@@ -125,7 +140,7 @@
             Total hasil: <span class="font-semibold text-slate-800">{{ $surveys->total() }}</span> data
         </div>
         <div class="flex items-center gap-2">
-            @if ($currentSearch || $currentKecamatan || $currentKelurahan || $currentKoneksi || $currentUserId || $currentTanggalMulai || $currentTanggalAkhir)
+            @if ($currentSearch || $currentKecamatan || $currentKelurahan || ($currentStatus ?? '') || $currentKoneksi || $currentUserId || $currentTanggalMulai || $currentTanggalAkhir)
                 <a href="{{ route('surveys.index') }}" class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 hover:underline">
                     Reset Filter
                 </a>

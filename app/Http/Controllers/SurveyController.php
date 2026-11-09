@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -35,6 +36,7 @@ class SurveyController extends Controller
             'search' => (string) $search,
             'kecamatan' => (string) $request->input('kecamatan', ''),
             'kelurahan' => (string) $request->input('kelurahan', ''),
+            'status' => (string) $request->input('status', ''),
             'koneksi' => (string) $request->input('koneksi', ''),
             'user_id' => (string) $request->input('user_id', ''),
             'tanggal_mulai' => (string) $request->input('tanggal_mulai', ''),
@@ -89,10 +91,12 @@ class SurveyController extends Controller
             'surveys' => $surveys,
             'kecamatanOptions' => $kecamatanOptions,
             'kelurahanOptions' => $kelurahanOptions,
+            'statusOptions' => SurveyLocation::STATUS_OPTIONS,
             'userOptions' => $userOptions,
             'currentSearch' => $filters['search'],
             'currentKecamatan' => $request->input('kecamatan', ''),
             'currentKelurahan' => $request->input('kelurahan', ''),
+            'currentStatus' => $request->input('status', ''),
             'currentKoneksi' => $request->input('koneksi', ''),
             'currentUserId' => $request->input('user_id', ''),
             'currentTanggalMulai' => $request->input('tanggal_mulai', ''),
@@ -152,6 +156,7 @@ class SurveyController extends Controller
         return view('surveys.create', [
             'kecamatanList' => SurveyLocation::getKecamatanList(),
             'kelurahanMap' => SurveyLocation::getKelurahanMap(),
+            'statusOptions' => SurveyLocation::STATUS_OPTIONS,
         ]);
     }
 
@@ -225,6 +230,7 @@ class SurveyController extends Controller
 
         return view('surveys.show', [
             'survey' => $survey,
+            'statusOptions' => SurveyLocation::STATUS_OPTIONS,
         ]);
     }
 
@@ -245,6 +251,7 @@ class SurveyController extends Controller
             'survey' => $survey,
             'kecamatanList' => SurveyLocation::getKecamatanList(),
             'kelurahanMap' => SurveyLocation::getKelurahanMap(),
+            'statusOptions' => SurveyLocation::STATUS_OPTIONS,
         ]);
     }
 
@@ -260,6 +267,26 @@ class SurveyController extends Controller
         return redirect()
             ->route('surveys.show', $survey)
             ->with('success', 'Data survey berhasil diperbarui.');
+    }
+
+    /**
+     * Update only the installation status of the specified survey.
+     */
+    public function updateStatus(Request $request, SurveyLocation $survey): RedirectResponse
+    {
+        Gate::authorize('update', $survey);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in(SurveyLocation::STATUS_OPTIONS)],
+        ]);
+
+        $survey->update([
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Status pemasangan berhasil diperbarui.');
     }
 
     /**

@@ -157,6 +157,17 @@
                 placeholder="-- Pilih Kecamatan --"
             />
         </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+            <x-select
+                name="status"
+                label="Status Pemasangan"
+                :value="$survey->status ?? \App\Models\SurveyLocation::STATUS_BELUM_TERPASANG"
+                :options="$statusOptions ?? \App\Models\SurveyLocation::STATUS_OPTIONS"
+                :placeholder="null"
+                helper="Status progres pemasangan titik CCTV / WiFi"
+            />
+        </div>
     </div>
 </x-card>
 

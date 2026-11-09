@@ -35,9 +35,20 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const markerColor = @json($survey->marker_color);
                 const map = L.map('detail-mini-map').setView([{{ $survey->latitude }}, {{ $survey->longitude }}], 15);
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
-                L.marker([{{ $survey->latitude }}, {{ $survey->longitude }}]).addTo(map);
+                const icon = L.divIcon({
+                    className: 'custom-status-marker',
+                    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="26" height="38">
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 24 12 24s12-15.5 12-24c0-6.627-5.373-12-12-12z" fill="${markerColor}" stroke="#ffffff" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="5" fill="#ffffff"/>
+                    </svg>`,
+                    iconSize: [26, 38],
+                    iconAnchor: [13, 38],
+                    popupAnchor: [0, -34],
+                });
+                L.marker([{{ $survey->latitude }}, {{ $survey->longitude }}], { icon }).addTo(map);
             });
         </script>
     @endif
