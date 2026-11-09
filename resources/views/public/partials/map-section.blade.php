@@ -27,7 +27,7 @@
                         <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span> Belum Terpasang
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Proses Pemasangan
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Proses Pemasangan
                     </span>
                     <span class="inline-flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-green-600"></span> Selesai Dipasang
@@ -68,7 +68,7 @@
 
             const getMarkerColor = (status) => {
                 if (status === 'Selesai Dipasang') return '#16a34a';
-                if (status === 'Proses Pemasangan') return '#f97316';
+                if (status === 'Proses Pemasangan') return '#2563eb';
                 return '#dc2626';
             };
 

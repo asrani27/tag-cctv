@@ -235,7 +235,7 @@ class PublicPagesTest extends TestCase
         ]);
 
         SurveyLocation::factory()->create([
-            'alamat' => 'Titik Orange Proses',
+            'alamat' => 'Titik Biru Proses',
             'latitude' => -3.3200,
             'longitude' => 114.5900,
             'status' => SurveyLocation::STATUS_PROSES_PEMASANGAN,
@@ -253,15 +253,15 @@ class PublicPagesTest extends TestCase
         $resSelesai->assertStatus(200);
         $resSelesai->assertSee('Titik Hijau Selesai');
         $resSelesai->assertDontSee('Titik Merah Belum');
-        $resSelesai->assertDontSee('Titik Orange Proses');
+        $resSelesai->assertDontSee('Titik Biru Proses');
 
-        // Verify geojson colors: Merah (#dc2626), Orange (#f97316), Hijau (#16a34a)
+        // Verify geojson colors: Merah (#dc2626), Biru (#2563eb), Hijau (#16a34a)
         $resGeoAll = $this->getJson('/map/geojson');
         $resGeoAll->assertStatus(200);
         $features = collect($resGeoAll->json('features'))->keyBy('properties.alamat');
 
         $this->assertEquals('#dc2626', $features['Titik Merah Belum']['properties']['marker_color']);
-        $this->assertEquals('#f97316', $features['Titik Orange Proses']['properties']['marker_color']);
+        $this->assertEquals('#2563eb', $features['Titik Biru Proses']['properties']['marker_color']);
         $this->assertEquals('#16a34a', $features['Titik Hijau Selesai']['properties']['marker_color']);
     }
 }

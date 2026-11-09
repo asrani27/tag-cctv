@@ -340,7 +340,7 @@ class SurveyLocation extends Model
     {
         return match ($this->status) {
             self::STATUS_SELESAI_DIPASANG => '#16a34a',
-            self::STATUS_PROSES_PEMASANGAN => '#f97316',
+            self::STATUS_PROSES_PEMASANGAN => '#2563eb',
             default => '#dc2626',
         };
     }

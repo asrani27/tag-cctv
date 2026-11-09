@@ -90,8 +90,8 @@
                     <span>Belum Terpasang (Merah)</span>
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-orange-500 inline-block shadow-xs"></span>
-                    <span>Proses Pemasangan (Orange)</span>
+                    <span class="w-3 h-3 rounded-full bg-blue-600 inline-block shadow-xs"></span>
+                    <span>Proses Pemasangan (Biru)</span>
                 </span>
                 <span class="inline-flex items-center gap-1.5">
                     <span class="w-3 h-3 rounded-full bg-green-600 inline-block shadow-xs"></span>
@@ -117,7 +117,7 @@
 
             const getMarkerColor = (status) => {
                 if (status === 'Selesai Dipasang') return '#16a34a';
-                if (status === 'Proses Pemasangan') return '#f97316';
+                if (status === 'Proses Pemasangan') return '#2563eb';
                 return '#dc2626';
             };
 
