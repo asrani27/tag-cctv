@@ -37,7 +37,7 @@
     </div>
 
     <!-- Stat Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-3 {{ $isSuperAdmin ? 'lg:grid-cols-7' : 'lg:grid-cols-6' }} gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 {{ $isSuperAdmin ? 'lg:grid-cols-8' : 'lg:grid-cols-7' }} gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
             <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Survey</span>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($totalSurvey) }}</p>
@@ -47,7 +47,13 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
             <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total CCTV</span>
             <p class="text-2xl font-bold text-slate-900 mt-2">{{ number_format($totalCctv) }}</p>
-            <p class="text-[11px] text-slate-400 mt-1">{{ $isSuperAdmin ? 'Unit Kamera' : 'CCTV Saya' }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">{{ $isSuperAdmin ? 'Rencana Kamera' : 'CCTV Saya' }}</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs">
+            <span class="text-xs font-medium text-emerald-700 uppercase tracking-wider block">CCTV Terpasang</span>
+            <p class="text-2xl font-bold text-emerald-700 mt-2">{{ number_format($totalCctvTerpasang ?? 0) }}</p>
+            <p class="text-[11px] text-emerald-600 mt-1">Sudah Terpasang</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">

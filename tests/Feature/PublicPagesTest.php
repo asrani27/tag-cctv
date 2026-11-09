@@ -22,6 +22,19 @@ class PublicPagesTest extends TestCase
             'jumlah_cctv' => 4,
             'jumlah_ap' => 2,
             'tersedia_fiber_optik' => true,
+            'status' => SurveyLocation::STATUS_BELUM_TERPASANG,
+        ]);
+
+        SurveyLocation::factory()->create([
+            'alamat' => 'Jl. A. Yani Km 2',
+            'kecamatan' => 'Banjarmasin Tengah',
+            'kelurahan' => 'Sungai Baru',
+            'latitude' => -3.3250000,
+            'longitude' => 114.5950000,
+            'jumlah_cctv' => 7,
+            'jumlah_ap' => 1,
+            'tersedia_fiber_optik' => true,
+            'status' => SurveyLocation::STATUS_SELESAI_DIPASANG,
         ]);
 
         $response = $this->get('/');
@@ -29,6 +42,13 @@ class PublicPagesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Sistem Informasi Survei');
         $response->assertSee('CCTV &amp; WiFi', false);
+        $response->assertSee('CCTV Terpasang');
+        $response->assertSee('Sudah Terpasang');
+        $response->assertViewHas('stats', function (array $stats): bool {
+            return $stats['total_cctv'] === 11
+                && $stats['total_cctv_terpasang'] === 7
+                && $stats['total_titik_terpasang'] === 1;
+        });
         $response->assertSee('Jl. Lambung Mangkurat No. 1');
         $response->assertSee('Banjarmasin Tengah');
         $response->assertSee('Persebaran Titik Survei');

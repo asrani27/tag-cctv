@@ -29,7 +29,7 @@
                         <span class="font-semibold text-white">Ringkasan Sistem Lapangan</span>
                         <span class="text-emerald-400 font-medium">Banjarmasin Smart City</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-700">
                             <div class="text-xs text-slate-400">Total Titik</div>
                             <div class="text-2xl font-bold text-white">{{ number_format($stats['total_survey']) }}</div>
@@ -39,6 +39,11 @@
                             <div class="text-xs text-slate-400">Kamera CCTV</div>
                             <div class="text-2xl font-bold text-white">{{ number_format($stats['total_cctv']) }}</div>
                             <div class="text-[11px] text-teal-400">Rencana Terpasang</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-emerald-500/40">
+                            <div class="text-xs text-slate-400">CCTV Terpasang</div>
+                            <div class="text-2xl font-bold text-emerald-400">{{ number_format($stats['total_cctv_terpasang'] ?? 0) }}</div>
+                            <div class="text-[11px] text-emerald-300">Sudah Terpasang</div>
                         </div>
                     </div>
                     <div class="text-xs text-slate-400 flex items-center justify-between pt-2">

@@ -25,6 +25,7 @@ class DashboardController extends Controller
         if ($user->isSuperAdmin()) {
             $totalSurvey = SurveyLocation::count();
             $totalCctv = (int) SurveyLocation::sum('jumlah_cctv');
+            $totalCctvTerpasang = (int) SurveyLocation::where('status', SurveyLocation::STATUS_SELESAI_DIPASANG)->sum('jumlah_cctv');
             $totalAp = (int) SurveyLocation::sum('jumlah_ap');
             $totalKecamatan = SurveyLocation::whereNotNull('kecamatan')
                 ->where('kecamatan', '!=', '')
@@ -49,6 +50,7 @@ class DashboardController extends Controller
                 'isSuperAdmin' => true,
                 'totalSurvey' => $totalSurvey,
                 'totalCctv' => $totalCctv,
+                'totalCctvTerpasang' => $totalCctvTerpasang,
                 'totalAp' => $totalAp,
                 'totalKecamatan' => $totalKecamatan,
                 'totalKelurahan' => $totalKelurahan,
@@ -65,6 +67,7 @@ class DashboardController extends Controller
 
         $totalSurvey = (clone $userSurveys)->count();
         $totalCctv = (int) (clone $userSurveys)->sum('jumlah_cctv');
+        $totalCctvTerpasang = (int) (clone $userSurveys)->where('status', SurveyLocation::STATUS_SELESAI_DIPASANG)->sum('jumlah_cctv');
         $totalAp = (int) (clone $userSurveys)->sum('jumlah_ap');
         $totalKecamatan = (clone $userSurveys)
             ->whereNotNull('kecamatan')
@@ -95,6 +98,7 @@ class DashboardController extends Controller
             'isSuperAdmin' => false,
             'totalSurvey' => $totalSurvey,
             'totalCctv' => $totalCctv,
+            'totalCctvTerpasang' => $totalCctvTerpasang,
             'totalAp' => $totalAp,
             'totalKecamatan' => $totalKecamatan,
             'totalKelurahan' => $totalKelurahan,

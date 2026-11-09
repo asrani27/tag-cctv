@@ -16,6 +16,8 @@ class HomeController extends Controller
         $stats = [
             'total_survey' => SurveyLocation::count(),
             'total_cctv' => (int) (SurveyLocation::sum('jumlah_cctv') ?? 0),
+            'total_cctv_terpasang' => (int) (SurveyLocation::where('status', SurveyLocation::STATUS_SELESAI_DIPASANG)->sum('jumlah_cctv') ?? 0),
+            'total_titik_terpasang' => SurveyLocation::where('status', SurveyLocation::STATUS_SELESAI_DIPASANG)->count(),
             'total_ap' => (int) (SurveyLocation::sum('jumlah_ap') ?? 0),
             'total_kecamatan' => SurveyLocation::whereNotNull('kecamatan')
                 ->where('kecamatan', '!=', '')
