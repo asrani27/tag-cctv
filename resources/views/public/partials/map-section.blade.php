@@ -112,7 +112,7 @@
                                     <div><span class="text-slate-400">CCTV:</span> <strong>${survey.jumlah_cctv ?? 0}</strong></div>
                                     <div><span class="text-slate-400">AP:</span> <strong>${survey.jumlah_ap ?? 0}</strong></div>
                                 </div>
-                                <a href="/survey/${survey.id}" class="block text-center py-1 px-2 rounded bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700">Lihat Detail</a>
+                                <a href="/survey/${survey.id}" style="color: #ffffff;" class="block text-center py-1.5 px-2 rounded bg-emerald-600 !text-white hover:!text-white font-semibold text-xs hover:bg-emerald-700 no-underline">Lihat Detail</a>
                             </div>
                         `;
                         marker.bindPopup(popupContent);

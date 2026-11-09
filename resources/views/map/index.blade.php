@@ -167,7 +167,7 @@
                                 <div>CCTV: <strong>${item.jumlah_cctv || 0} unit</strong></div>
                                 <div>WiFi AP: <strong>${item.jumlah_ap || 0} unit</strong></div>
                             </div>
-                            <a href="${item.detail_url}" class="block text-center py-1 bg-emerald-600 text-white rounded font-semibold text-xs hover:bg-emerald-700">Lihat Detail</a>
+                            <a href="${item.detail_url}" style="color: #ffffff;" class="block text-center py-1.5 bg-emerald-600 !text-white hover:!text-white rounded font-semibold text-xs hover:bg-emerald-700 no-underline">Lihat Detail</a>
                         </div>`;
                         m.bindPopup(popup);
                     }
