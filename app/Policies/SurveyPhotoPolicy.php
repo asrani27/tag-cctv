@@ -42,6 +42,24 @@ class SurveyPhotoPolicy
     }
 
     /**
+     * Determine whether the user can update the photo.
+     */
+    public function update(User $user, SurveyPhoto $photo): bool
+    {
+        if (! $user->isActive()) {
+            return false;
+        }
+
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        $survey = $photo->surveyLocation;
+
+        return $survey && $survey->user_id !== null && $survey->user_id === $user->id;
+    }
+
+    /**
      * Determine whether the user can delete the photo.
      */
     public function delete(User $user, SurveyPhoto $photo): bool

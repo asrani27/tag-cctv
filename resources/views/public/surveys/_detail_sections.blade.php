@@ -66,6 +66,9 @@
                     </a>
                     <div class="p-2.5 space-y-0.5">
                         <p class="text-[11px] text-slate-800 font-medium truncate" title="{{ $photo->original_name }}">{{ $photo->original_name }}</p>
+                        @if ($photo->caption)
+                            <p class="text-[11px] text-slate-600">{{ $photo->caption }}</p>
+                        @endif
                         <p class="text-[10px] text-slate-400">{{ $photo->formatted_size }} &bull; {{ $photo->created_at?->format('d/m/Y H:i') }}</p>
                     </div>
                 </div>

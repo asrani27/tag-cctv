@@ -79,6 +79,7 @@
                         file,
                         name: file.name,
                         size: file.size,
+                        caption: '',
                         previewUrl: URL.createObjectURL(file),
                         progress: 0,
                         status: 'pending',
@@ -236,6 +237,7 @@
                     upload_id: qItem.id,
                     total_chunks: totalChunks,
                     original_filename: qItem.name,
+                    caption: qItem.caption || null,
                 };
                 if (this.surveyId) body.survey_id = this.surveyId;
 
@@ -261,6 +263,7 @@
                 qItem.resultUrl = result.photo?.url || qItem.previewUrl;
                 qItem.tempId = result.temp_id || null;
                 qItem.resultPhotoId = result.photo?.id || null;
+                qItem.caption = result.photo?.caption ?? qItem.caption ?? '';
 
                 this.updateUploadStatus();
             } catch (e) {
@@ -367,6 +370,56 @@
                 }
             } catch (e) {
                 this.errorMessage = 'Gagal menghapus foto: ' + e.message;
+            }
+        },
+
+        async saveExistingPhotoCaption(photo) {
+            const caption = (photo.caption || '').trim();
+            try {
+                const res = await fetch(photo.captionUpdateUrl, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ caption }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    this.errorMessage = err.message || 'Gagal menyimpan keterangan.';
+                }
+            } catch (e) {
+                this.errorMessage = 'Gagal menyimpan keterangan: ' + e.message;
+            }
+        },
+
+        async saveQueueCaption(item) {
+            let url = null;
+            if (item.resultPhotoId && this.surveyId) {
+                url = `/surveys/${this.surveyId}/photos/${item.resultPhotoId}`;
+            } else if (item.tempId) {
+                url = `/surveys/photos/temp/${item.tempId}`;
+            }
+            if (!url) return;
+
+            const caption = (item.caption || '').trim();
+            try {
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ caption }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    this.errorMessage = err.message || 'Gagal menyimpan keterangan.';
+                }
+            } catch (e) {
+                this.errorMessage = 'Gagal menyimpan keterangan: ' + e.message;
             }
         },
 

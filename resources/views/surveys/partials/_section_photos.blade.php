@@ -15,9 +15,11 @@
                         'id' => $p->id,
                         'url' => $p->url,
                         'original_name' => $p->original_name,
+                        'caption' => $p->caption,
                         'file_size' => $p->file_size,
                         'formatted_size' => $p->formatted_size,
                         'deleteUrl' => route('surveys.photos.destroy', [$survey->id, $p->id]),
+                        'captionUpdateUrl' => route('surveys.photos.update-caption', [$survey->id, $p->id]),
                     ])->values()
                     : []
             ) }},

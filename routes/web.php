@@ -55,6 +55,8 @@ Route::middleware('auth')->group(function () {
     Route::post('surveys/photos/complete', [SurveyPhotoController::class, 'completeUpload'])->name('surveys.photos.complete');
     Route::delete('surveys/photos/chunk/{uploadId}', [SurveyPhotoController::class, 'cancelUpload'])->name('surveys.photos.cancel');
     Route::delete('surveys/{survey}/photos/{photo}', [SurveyPhotoController::class, 'destroy'])->name('surveys.photos.destroy');
+    Route::patch('surveys/photos/temp/{uploadId}', [SurveyPhotoController::class, 'updateTempCaption'])->name('surveys.photos.update-temp-caption');
+    Route::patch('surveys/{survey}/photos/{photo}', [SurveyPhotoController::class, 'updateCaption'])->name('surveys.photos.update-caption');
 
     // Superadmin-only: Export Excel (defined before resource to avoid {survey} catch)
     Route::middleware('superadmin')

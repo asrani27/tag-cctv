@@ -92,6 +92,7 @@ class SurveyPhotoController extends Controller
             'upload_id' => ['required', 'string', 'regex:/^[0-9a-fA-F-]{36}$/'],
             'total_chunks' => ['required', 'integer', 'min:1'],
             'original_filename' => ['required', 'string', 'max:255'],
+            'caption' => ['nullable', 'string', 'max:255'],
             'survey_id' => ['nullable', 'integer', 'exists:survey_locations,id'],
         ]);
 
@@ -99,6 +100,7 @@ class SurveyPhotoController extends Controller
         $uploadId = $validated['upload_id'];
         $totalChunks = (int) $validated['total_chunks'];
         $cleanOriginalName = basename(strip_tags($validated['original_filename']));
+        $caption = $validated['caption'] ?? null;
 
         $survey = null;
         if (! empty($validated['survey_id'])) {
@@ -151,7 +153,7 @@ class SurveyPhotoController extends Controller
         }
         fclose($destHandle);
 
-        return $this->processAndStoreMergedPhoto($userId, $uploadId, $cleanOriginalName, $mergedTempPath, $chunkDir, $survey);
+        return $this->processAndStoreMergedPhoto($userId, $uploadId, $cleanOriginalName, $mergedTempPath, $chunkDir, $survey, $caption);
     }
 
     /**
@@ -163,7 +165,8 @@ class SurveyPhotoController extends Controller
         string $cleanOriginalName,
         string $mergedTempPath,
         string $chunkDir,
-        ?SurveyLocation $survey
+        ?SurveyLocation $survey,
+        ?string $caption = null
     ): JsonResponse {
         $allowedMimes = config('upload.allowed_mimes', ['image/jpeg', 'image/png', 'image/webp']);
         $maxFileSize = config('upload.max_file_size', 25 * 1024 * 1024);
@@ -231,6 +234,7 @@ class SurveyPhotoController extends Controller
                 'user_id' => $userId,
                 'file_path' => $targetPath,
                 'original_name' => $cleanOriginalName,
+                'caption' => $caption,
                 'mime_type' => $detectedMime,
                 'file_size' => $fileSize,
                 'sort_order' => $maxSort + 1,
@@ -243,6 +247,7 @@ class SurveyPhotoController extends Controller
                     'id' => $photo->id,
                     'url' => $photo->url,
                     'original_name' => $photo->original_name,
+                    'caption' => $photo->caption,
                     'file_size' => $photo->file_size,
                     'formatted_size' => $photo->formatted_size,
                 ],
@@ -268,6 +273,7 @@ class SurveyPhotoController extends Controller
             'upload_id' => $uploadId,
             'file_path' => $targetPath,
             'original_name' => $cleanOriginalName,
+            'caption' => $caption,
             'mime_type' => $detectedMime,
             'file_size' => $fileSize,
         ]);
@@ -280,6 +286,7 @@ class SurveyPhotoController extends Controller
                 'temp_id' => $uploadId,
                 'url' => $tempPhoto->url,
                 'original_name' => $tempPhoto->original_name,
+                'caption' => $tempPhoto->caption,
                 'file_size' => $tempPhoto->file_size,
             ],
         ]);
@@ -312,6 +319,62 @@ class SurveyPhotoController extends Controller
         return response()->json([
             'status' => 'deleted',
             'upload_id' => $uploadId,
+        ]);
+    }
+
+    /**
+     * Update the caption of a permanent survey photo.
+     */
+    public function updateCaption(Request $request, SurveyLocation $survey, SurveyPhoto $photo): JsonResponse
+    {
+        if ($photo->survey_location_id !== $survey->id) {
+            abort(404);
+        }
+
+        Gate::authorize('update', $photo);
+
+        $validated = $request->validate([
+            'caption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $photo->update([
+            'caption' => $validated['caption'] ?: null,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'caption' => $photo->caption,
+        ]);
+    }
+
+    /**
+     * Update the caption of a temporary survey photo.
+     */
+    public function updateTempCaption(Request $request, string $uploadId): JsonResponse
+    {
+        if (! preg_match('/^[0-9a-fA-F-]{36}$/', $uploadId)) {
+            return response()->json(['message' => 'Format upload ID tidak valid.'], 422);
+        }
+
+        $validated = $request->validate([
+            'caption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $tempPhoto = SurveyTempPhoto::where('user_id', $request->user()->id)
+            ->where('upload_id', $uploadId)
+            ->first();
+
+        if (! $tempPhoto) {
+            abort(404);
+        }
+
+        $tempPhoto->update([
+            'caption' => $validated['caption'] ?: null,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'caption' => $tempPhoto->caption,
         ]);
     }
 

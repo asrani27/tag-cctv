@@ -28,6 +28,7 @@ class SurveyTempPhoto extends Model
         'upload_id',
         'file_path',
         'original_name',
+        'caption',
         'mime_type',
         'file_size',
     ];

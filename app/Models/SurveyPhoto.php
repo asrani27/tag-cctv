@@ -28,6 +28,7 @@ class SurveyPhoto extends Model
         'user_id',
         'file_path',
         'original_name',
+        'caption',
         'mime_type',
         'file_size',
         'sort_order',

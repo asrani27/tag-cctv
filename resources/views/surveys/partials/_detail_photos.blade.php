@@ -9,6 +9,9 @@
                 </a>
                 <div class="px-2.5 py-2">
                     <p class="text-[11px] text-slate-700 font-medium truncate">{{ $photo->original_name }}</p>
+                    @if ($photo->caption)
+                        <p class="text-[11px] text-slate-600">{{ $photo->caption }}</p>
+                    @endif
                     <p class="text-[10px] text-slate-400">{{ $photo->formatted_size }} &bull; {{ $photo->created_at?->format('d/m/Y H:i') }}</p>
                     @if ($photo->user)
                         <p class="text-[10px] text-slate-400">Oleh: {{ $photo->user->name }}</p>

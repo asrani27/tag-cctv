@@ -201,6 +201,7 @@ class SurveyController extends Controller
                             'user_id' => $request->user()->id,
                             'file_path' => $newPath,
                             'original_name' => $temp->original_name,
+                            'caption' => $temp->caption,
                             'mime_type' => $temp->mime_type,
                             'file_size' => $temp->file_size,
                             'sort_order' => $order++,
