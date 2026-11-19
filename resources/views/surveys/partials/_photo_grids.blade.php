@@ -11,7 +11,7 @@
                         <p class="text-[10px] text-slate-400" x-text="photo.formatted_size"></p>
                     </div>
                     <button type="button" @click="removeExistingPhoto(photo)"
-                        class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-rose-600 cursor-pointer"
+                        class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center transition hover:bg-rose-600 cursor-pointer"
                         title="Hapus foto">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
