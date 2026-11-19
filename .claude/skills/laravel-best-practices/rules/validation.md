@@ -65,7 +65,7 @@ Use conditional rules such as `Rule::when()`, `required_if`, or `exclude_unless`
 
 ## Add Cross-Field Validation After Base Rules
 
-Use a form request's `after()` method for validation that depends on multiple fields or application state. Avoid expensive queries when prerequisite fields have already failed validation.
+Use a form request'ss `after()` method for validation that depends on multiple fields or application state. Avoid expensive queries when prerequisite fields have already failed validation.
 
 ```php
 public function after(): array
