@@ -9,7 +9,9 @@
                     <div class="px-2 py-1.5">
                         <p class="text-[10px] text-slate-600 truncate" x-text="photo.original_name"></p>
                         <p class="text-[10px] text-slate-400" x-text="photo.formatted_size"></p>
-                        <input type="text" x-model="photo.caption" @change="saveExistingPhotoCaption(photo)"
+                        <input type="text" x-model="photo.caption"
+                            @input.debounce.500ms="saveExistingPhotoCaption(photo)"
+                            @keydown.enter.prevent="saveExistingPhotoCaption(photo)"
                             placeholder="Tambah keterangan..." maxlength="255"
                             class="mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500" />
                     </div>
@@ -58,7 +60,9 @@
                         <p class="text-[10px] text-slate-400" x-text="formatSize(item.size)"></p>
                         <p x-show="item.status === 'complete'" class="text-[10px] text-emerald-600 font-medium mt-0.5" x-text="surveyId ? 'Tersimpan ke survey' : 'Siap disimpan'"></p>
                         <p x-show="item.status === 'error'" class="text-[10px] text-rose-600 truncate mt-0.5" x-text="item.errorText"></p>
-                        <input type="text" x-model="item.caption" @change="saveQueueCaption(item)"
+                        <input type="text" x-model="item.caption"
+                            @input.debounce.500ms="saveQueueCaption(item)"
+                            @keydown.enter.prevent="saveQueueCaption(item)"
                             placeholder="Tambah keterangan (opsional)..." maxlength="255"
                             class="mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500" />
                     </div>
